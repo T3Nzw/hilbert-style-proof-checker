@@ -1,0 +1,26 @@
+:l ../src/Program/Axioms.hs ../src/Program/Formulae.hs ../src/Program/ProofStatement.hs ../src/Program/Rules.hs  ../src/Program/Theorem.hs 
+
+import Program.Axioms
+import Program.Formulae
+import Program.ProofStatement
+import Program.Rules
+import Control.Monad.State
+
+let f1 = Variable "X" :->: Variable "Y" :->: Variable "X"
+
+let st1 = [f1 `By` AX K]
+
+let p1 = evalState (proofcheck st1) (Context [])
+
+
+let f21 = Variable "A"
+let f22 = Variable "A" :->: Variable "B" :->: Variable "A"
+let f23 = Variable "B" :->: Variable "A"
+
+let st21 = [f21 `By` AS]
+let st22 = [f22 `By` AX K]
+let st23 = [f23 `By` MP]
+
+let p2 = evalState (proofcheck (st21 ++ st22 ++ st23)) (Context [f21])
+let st23p = proofcheck' (Context [f21, f22]) $ head st23
+
