@@ -45,7 +45,7 @@ names are kinda shit ngl
 3.  CONJ_ELIM             :  A & B -> A; A & B -> B
 4.  CONJ_INTRO            :  A -> B -> A & B
 5.  DISJ_INTRO            :  A -> A | B; B -> A | B
-6.  DISJ_ELIM             :  (A -> C) -> (B -> C) -> A | C -> C
+6.  DISJ_ELIM             :  (A -> C) -> (B -> C) -> A | B -> C
 7.  UNIV_WITNESS <subst>  :  \forall x. A -> A [x ~> <subst>]
 8.  UNIV_IMPLIES          :  \forall x. (B -> A) -> (B -> \forall x. A) where x not in FV(B)
 9.  SUB_EXIST <subst>     :  A[x ~> <subst>] -> \exists x. A
