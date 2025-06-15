@@ -1,5 +1,6 @@
-:l ../src/Program/Axioms.hs ../src/Program/Formulae.hs ../src/Program/ProofStatement.hs ../src/Program/Rules.hs  ../src/Program/Theorem.hs 
+:l ../src/Program/Axioms.hs ../src/Program/Formulae.hs ../src/Program/ProofStatement.hs ../src/Program/Rules.hs  ../src/Program/Theorem.hs ../src/Utils/Utils.hs
 
+import Utils
 import Program.Axioms
 import Program.Formulae
 import Program.ProofStatement
@@ -17,7 +18,7 @@ let f21 = Variable "A"
 let f22 = Variable "A" :->: Variable "B" :->: Variable "A"
 let f23 = Variable "B" :->: Variable "A"
 
-let st21 = [f21 `By` AS]
+let st21 = [f21 `By` AX K]
 let st22 = [f22 `By` AX K]
 let st23 = [f23 `By` MP]
 

@@ -1,6 +1,8 @@
--- uses the same parser i had written for the lambda interpreter
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE LambdaCase #-}
+
+-- resources used:
+-- https://people.cs.nott.ac.uk/pszgmh/monparsing.pdf
 
 module Parser where
 
@@ -108,8 +110,12 @@ many1 p = do
 zeroOrOne :: Parser a -> Parser [a]
 zeroOrOne p = (: []) <$> p <|> return []
 
+-- TODO potentially make it somewhat polymorphic
 oneOf :: [Char] -> Parser Char
 oneOf = foldr (\x xs -> char x <|> xs) zero
+
+oneOfS :: [String] -> Parser String
+oneOfS = foldr (\x xs -> string x <|> xs) zero
 
 spaces :: Parser ()
 spaces = void $ many' space

@@ -12,13 +12,13 @@ data Axiom
   | CONJ_INTRO
   | DISJ_INTRO Position
   | DISJ_ELIM
-  | UNIV_WITNESS String
+  | UNIV_WITNESS ConcreteFormula
   | UNIV_IMPLIES
-  | SUB_EXIST String
+  | SUB_EXIST ConcreteFormula
   | EX_IMPLIES
   | EX_FALSO
   | STAB
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq)
 
 -- really, i've represented A, B, and C as ordinary variables, but they're supposed to be metavariables :)
 -- i don't think that breaks the equality algorithm? at least i hope not
@@ -27,66 +27,66 @@ data Axiom
 
 -- minimal logic
 
-s :: Formula
+s :: MetaFormula
 s = (Variable "A" :->: Variable "B" :->: Variable "C") :->: (Variable "B" :->: Variable "C") :->: Variable "A" :->: Variable "C"
 
-k :: Formula
+k :: MetaFormula
 k = Variable "A" :->: Variable "B" :->: Variable "A"
 
-conjElimLeft :: Formula
+conjElimLeft :: MetaFormula
 conjElimLeft = (Variable "A" :&: Variable "B") :->: Variable "B"
 
-conjElimRight :: Formula
+conjElimRight :: MetaFormula
 conjElimRight = (Variable "A" :&: Variable "B") :->: Variable "A"
 
-conjIntro :: Formula
+conjIntro :: MetaFormula
 conjIntro = Variable "A" :->: Variable "B" :->: (Variable "A" :&: Variable "B")
 
-disjIntroLeft :: Formula
+disjIntroLeft :: MetaFormula
 disjIntroLeft = Variable "B" :->: (Variable "A" :|: Variable "B")
 
-disjIntroRight :: Formula
+disjIntroRight :: MetaFormula
 disjIntroRight = Variable "A" :->: (Variable "A" :|: Variable "B")
 
-disjElim :: Formula
+disjElim :: MetaFormula
 disjElim = (Variable "A" :->: Variable "C") :->: (Variable "B" :->: Variable "C") :->: (Variable "A" :|: Variable "B") :->: Variable "C"
 
-univWitness :: Formula
+univWitness :: MetaFormula
 univWitness = Forall "x" (Variable "A") :->: Variable "A" `With` ("x" :~> Variable "t")
 
-univImplies :: Formula -- where x not in FV(B)
+univImplies :: MetaFormula -- where x not in FV(B)
 univImplies = Forall "x" (Variable "B" :->: Variable "A") :->: (Variable "B" :->: Forall "x" (Variable "A"))
 
-subExist :: Formula -- where x not in FV(B)
+subExist :: MetaFormula -- where x not in FV(B)
 subExist = Variable "A" `With` ("x" :~> Variable "t") :->: Exists "x" (Variable "A")
 
-exImplies :: Formula
+exImplies :: MetaFormula
 exImplies = Forall "x" (Variable "A" :->: Variable "B") :->: (Exists "x" (Variable "A") :->: Variable "B")
 
 -- intuitionistic logic
 
-exFalso :: Formula
+exFalso :: MetaFormula
 exFalso = Void :->: Variable "A"
 
 -- classical logic
 
-stab :: Formula
+stab :: MetaFormula
 stab = Negation (Negation (Variable "A")) :->: Variable "A"
 
-matchToFormula :: Axiom -> Formula
-matchToFormula S = s
-matchToFormula K = k
-matchToFormula (CONJ_ELIM Lhs) = conjElimLeft
-matchToFormula (CONJ_ELIM Rhs) = conjElimRight
-matchToFormula CONJ_INTRO = conjIntro
-matchToFormula (DISJ_INTRO Lhs) = disjIntroLeft
-matchToFormula (DISJ_INTRO Rhs) = disjIntroRight
-matchToFormula DISJ_ELIM = disjElim
+matchToMetaFormula :: Axiom -> MetaFormula
+matchToMetaFormula S = s
+matchToMetaFormula K = k
+matchToMetaFormula (CONJ_ELIM Lhs) = conjElimLeft
+matchToMetaFormula (CONJ_ELIM Rhs) = conjElimRight
+matchToMetaFormula CONJ_INTRO = conjIntro
+matchToMetaFormula (DISJ_INTRO Lhs) = disjIntroLeft
+matchToMetaFormula (DISJ_INTRO Rhs) = disjIntroRight
+matchToMetaFormula DISJ_ELIM = disjElim
 -- TODO potentially apply some substitution on the bound variable!
-matchToFormula (UNIV_WITNESS subst) = univWitness
-matchToFormula UNIV_IMPLIES = univImplies
+matchToMetaFormula (UNIV_WITNESS subst) = univWitness
+matchToMetaFormula UNIV_IMPLIES = univImplies
 -- TODO same as above
-matchToFormula (SUB_EXIST subst) = subExist
-matchToFormula EX_IMPLIES = exImplies
-matchToFormula EX_FALSO = exFalso
-matchToFormula STAB = stab
+matchToMetaFormula (SUB_EXIST subst) = subExist
+matchToMetaFormula EX_IMPLIES = exImplies
+matchToMetaFormula EX_FALSO = exFalso
+matchToMetaFormula STAB = stab

@@ -6,14 +6,16 @@
 
 ```
 theorem <identifier> :=
-  assume <assumption_1>, <assumption_2>, ..., <assumption_n>{,}
-  goal <formula>
-  begin
-    <statement_1> by <rule> {<rule_arguments>}
+  assume <assumption_1>, <assumption_2>, ..., <assumption_n>.
+  goal <formula>.
+  begin.
+    <statement_1> by <rule> {<rule_arguments>}.
     ...
-    <statement_N> by <rule> {<rule_arguments>}
-  qed
+    <statement_N> by <rule> {<rule_arguments>}.
+  qed.
 ```
+
+*Note*: The grammar is not indentation-sensitive.
 
 - Formulae:
 

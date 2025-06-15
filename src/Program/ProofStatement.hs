@@ -1,26 +1,22 @@
 module Program.ProofStatement where
 
 import Control.Monad.State (MonadState (get), State, modify)
-import Program.Axioms (matchToFormula)
+import qualified Data.Set as S
+import Program.Axioms (matchToMetaFormula)
 import Program.Formulae (Formula (..), split, syntacticEq)
 import qualified Program.Formulae as Formula
 import Program.Rules
+import Utils
 
-elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool
-elemBy _ _ [] = False
-elemBy cmp x (y : ys) = x `cmp` y || elemBy cmp x ys
-
-data ProofStatement = Formula.Formula `By` Rule
+data ProofStatement = Formula.ConcreteFormula `By` Rule
   deriving (Show)
 
 type ProofStatements = [ProofStatement]
 
-newtype Goal = Goal Formula.Formula
+newtype Goal = Goal Formula.ConcreteFormula
   deriving (Show)
 
--- tradeoff of complexity for sanity (Data.Set requires the ADT to implement Ord
--- but i have a custom Eq implementation)
-newtype Context = Context [Formula]
+newtype Context = Context (S.Set Formula.ConcreteFormula)
   deriving (Show)
 
 {-
@@ -42,18 +38,18 @@ will not cause the algorithm to fail; although the context is never really empty
 -}
 proofcheck' :: Context -> ProofStatement -> Bool
 -- SYNTACTIC EQUALITY.
-proofcheck' (Context ctx) (f `By` AS) = elemBy syntacticEq f ctx
-proofcheck' _ (f `By` AX axiom) = f == axiomFormula
+proofcheck' (Context ctx) (f `By` AS) = S.member f ctx
+proofcheck' _ (f `By` AX axiom) = Formula.match axiomFormula f
   where
-    axiomFormula = matchToFormula axiom
-proofcheck' (Context ctx) (f `By` MP) = match ctx ctx f
+    axiomFormula = matchToMetaFormula axiom
+proofcheck' (Context ctx) (f `By` MP) = match ctx (S.toList ctx) f
   where
     -- O(n^2) duh
-    match :: [Formula] -> [Formula] -> Formula -> Bool
+    match :: S.Set Formula.ConcreteFormula -> [Formula.ConcreteFormula] -> Formula.ConcreteFormula -> Bool
     match _ [] _ = False
-    match og (f : fs) b = elemBy syntacticEq (f :->: b) og || match og fs b
+    match og (f : fs) b = S.member (f :->: b) og || match og fs b
 -- assuming split works correctly
-proofcheck' (Context ctx) (Formula.Forall x f `By` GEN) = elemBy syntacticEq f ctx && notfree
+proofcheck' (Context ctx) (Formula.Forall x f `By` GEN) = S.member f ctx && notfree
   where
     notfree = all ((x `notElem`) . snd . split) ctx
 proofcheck' _ _ = False
@@ -73,7 +69,7 @@ proofcheck (x : xs) = do
   if proofcheck' ctx x
     then do
       let (f `By` _) = x
-      modify $ \(Context c) -> Context $ c ++ [f]
+      modify $ \(Context c) -> Context $ S.insert f c
       proofcheck xs
     else
       pure $ Just x
