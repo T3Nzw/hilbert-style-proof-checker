@@ -1,3 +1,6 @@
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Program.ProofStatement where
 
 import Control.Monad.State (MonadState (get), State, modify)
@@ -13,7 +16,8 @@ data ProofStatement = Formula.ConcreteFormula `By` Rule
 type ProofStatements = [ProofStatement]
 
 newtype Goal = Goal Formula.ConcreteFormula
-  deriving (Show)
+  deriving stock (Show)
+  deriving newtype (Eq, Ord)
 
 newtype Context = Context {_ctx :: S.Set Formula.ConcreteFormula}
   deriving (Show)
