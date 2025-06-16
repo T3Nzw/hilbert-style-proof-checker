@@ -8,6 +8,7 @@ import Program.Rules
 import Control.Monad.State
 import qualified Data.Set as S
 import qualified Data.Map as M
+import Program.Theorem
 
 -- proof of the K combinator using the axiom A -> B -> A
 
@@ -91,4 +92,31 @@ let st62 = [Forall "x" f6 `By` GEN]  -- x is NOT free in the context: {\forall "
 
 let p6 = evalState (proofcheck (st61 ++ st62)) (Context (S.fromList [f6]))
 
+-- identity; A -> A
+
+-- 1. A -> A -> A ; AX K with A:=A, B:=A
+-- 2. A -> (A -> A) -> A  ; AX K with A:=A, B:=A->A
+-- 3. (A -> (A -> A) -> A) -> (A -> (A -> A)) -> A -> A  ; AX S with A:=A, B:=A->A, C:=A
+-- 4. (A -> A -> A) -> A -> A  ; MP 3,2
+-- 5. A -> A  ; MP 4,1
+
+let f71 = Variable "A" :->: Variable "A" :->: Variable "A"
+let f72 = Variable "A" :->: (Variable "A" :->: Variable "A") :->: Variable "A"
+let f73 = f72 :->: f71 :->: Variable "A" :->: Variable "A"
+let f74 = f71 :->: Variable "A" :->: Variable "A"
+let f75 = Variable "A" :->: Variable "A"
+
+let st71 = [f71 `By` AX K]
+let st72 = [f72 `By` AX K]
+let st73 = [f73 `By` AX S]
+let st74 = [f74 `By` MP]
+let st75 = [f75 `By` MP]
+
+let pss7 = st71 ++ st72 ++ st73 ++ st74 ++ st75
+
+let p7 = evalState (proofcheck pss7) (Context S.empty)
+
+let goal = Goal $ Variable "A" :->: Variable "A"
+
+let t7 = prove $ Theorem "identity" goal (Context S.empty) pss7
 

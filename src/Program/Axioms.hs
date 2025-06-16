@@ -28,7 +28,7 @@ data Axiom
 -- minimal logic
 
 s :: MetaFormula
-s = (Variable "A" :->: Variable "B" :->: Variable "C") :->: (Variable "B" :->: Variable "C") :->: Variable "A" :->: Variable "C"
+s = (Variable "A" :->: Variable "B" :->: Variable "C") :->: (Variable "A" :->: Variable "B") :->: Variable "A" :->: Variable "C"
 
 k :: MetaFormula
 k = Variable "A" :->: Variable "B" :->: Variable "A"
