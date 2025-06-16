@@ -45,7 +45,7 @@ proofcheck' _ (f `By` AX axiom) = Formula.match axiomFormula f
     axiomFormula = matchToMetaFormula axiom
 proofcheck' (Context ctx) (f `By` MP) = match ctx (S.toList ctx) f
   where
-    -- O(n^2) duh
+    -- O(nlogn)
     match :: S.Set Formula.ConcreteFormula -> [Formula.ConcreteFormula] -> Formula.ConcreteFormula -> Bool
     match _ [] _ = False
     match og (f : fs) b = S.member (f :->: b) og || match og fs b
