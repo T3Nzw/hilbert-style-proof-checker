@@ -61,3 +61,34 @@ let st3 = st31 ++ st32 ++ st33 ++ st34 ++ st35 ++ st36 ++ st37 ++ st38
 
 let p3 = evalState (proofcheck st3) (Context (S.fromList [f33]))
 
+
+-- generalisation of a single formula - succeeds
+
+let f4 = Variable "A"
+
+let st41 = [f4 `By` AS]
+let st42 = [Forall "x" f4 `By` GEN]
+
+let p4 = evalState (proofcheck (st41 ++ st42)) (Context (S.fromList [f4]))
+
+
+-- generalisation of a single formula - fails 
+
+let f5 = Variable "x"
+
+let st51 = [f5 `By` AS]
+let st52 = [Forall "x" f5 `By` GEN]  -- x IS free in the context: {"x"}
+
+let p5 = evalState (proofcheck (st51 ++ st52)) (Context (S.fromList [f5]))
+
+
+-- more complex generalisation example - succeeds
+
+let f6 = Forall "x" f5  -- \forall x. A
+
+let st61 = [f6 `By` AS]
+let st62 = [Forall "x" f6 `By` GEN]  -- x is NOT free in the context: {\forall "x". A}
+
+let p6 = evalState (proofcheck (st61 ++ st62)) (Context (S.fromList [f6]))
+
+

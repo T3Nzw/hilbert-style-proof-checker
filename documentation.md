@@ -34,7 +34,7 @@ theorem <identifier> :=
 <rule> = AS
        | AX <axiom_name>
        | MP
-       | GEN <formula>
+       | GEN 
 ```
 
 - Axioms:
