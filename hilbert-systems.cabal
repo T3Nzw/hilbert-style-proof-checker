@@ -78,4 +78,4 @@ executable hilbert-systems
     -- Base language which the package is written in.
     default-language: Haskell2010
 
-    other-modules: Parser, Precedence, HMIC.Parser, Program.Theorem, Program.Formulae, Program.Axioms, Program.Rules, Program.ProofStatement, Utils
+    other-modules: Parser, Precedence, HMIC.Parser, Program.Theorem, Program.Formulae, Program.Axioms, Program.Rules, Program.ProofStatement, Utils, HMIC.FormulaParser

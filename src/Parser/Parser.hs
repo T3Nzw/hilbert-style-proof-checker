@@ -10,7 +10,7 @@ import Control.Applicative
 import Control.Monad
 import Data.Char (isAscii, isAsciiLower, isAsciiUpper, isDigit)
 
-newtype Parser a = Parser {_parse :: String -> [(a, String)]}
+newtype Parser a = Parser {_run :: String -> [(a, String)]}
 
 instance Functor Parser where
   fmap :: (a -> b) -> Parser a -> Parser b
@@ -40,7 +40,7 @@ instance Alternative Parser where
   empty = zero
 
   (<|>) :: Parser a -> Parser a -> Parser a
-  p <|> q = Parser $ \input -> case _parse (p `plus` q) input of
+  p <|> q = Parser $ \input -> case _run (p `plus` q) input of
     [] -> []
     (x : _) -> [x]
 
@@ -59,7 +59,7 @@ sat :: (Char -> Bool) -> Parser Char
 sat p = item >>= \input -> if p input then result input else zero
 
 plus :: Parser a -> Parser a -> Parser a
-plus p q = Parser $ \input -> _parse p input ++ _parse q input
+plus p q = Parser $ \input -> _run p input ++ _run q input
 
 char :: Char -> Parser Char
 char x = sat (== x)
@@ -110,6 +110,10 @@ many1 p = do
 zeroOrOne :: Parser a -> Parser [a]
 zeroOrOne p = (: []) <$> p <|> return []
 
+repeatP :: Int -> Parser a -> Parser [a]
+repeatP 0 _ = pure []
+repeatP n p = p >>= \x -> (x :) <$> repeatP (n - 1) p
+
 -- TODO potentially make it somewhat polymorphic
 oneOf :: [Char] -> Parser Char
 oneOf = foldr (\x xs -> char x <|> xs) zero
@@ -133,12 +137,28 @@ all :: Parser String
 all = many' item
 
 branch :: Bool -> Parser a -> Parser a -> Parser a
-branch b t f = Parser $ \input -> if b then _parse t input else _parse f input
+branch b t f = Parser $ \input -> if b then _run t input else _run f input
+
+tokeniseBy :: Parser Char -> Parser [String]
+tokeniseBy p = many' (many1 p <* spaces)
 
 tokenise :: Parser [String]
-tokenise = many' (many1 notInterval <* spaces)
+tokenise = tokeniseBy notInterval
   where
     notInterval = sat (\x -> x /= ' ' && x /= '\n' && x /= '\t')
+
+-- a lookahead parser...
+consumeUntil :: String -> Parser String
+consumeUntil s = Parser $ \input -> _run (repeatP (index 0 input s) item) input -- eww
+  where
+    index :: Int -> String -> String -> Int
+    index n [] _ = n
+    index n str substr =
+      if take len str == substr
+        then n
+        else index (n + 1) (tail str) substr
+      where
+        len = length substr
 
 class Parseable a where
   parse :: String -> Either String a

@@ -3,10 +3,9 @@ module Program.ProofStatement where
 import Control.Monad.State (MonadState (get), State, modify)
 import qualified Data.Set as S
 import Program.Axioms (matchToMetaFormula)
-import Program.Formulae (Formula (..), split, syntacticEq)
+import Program.Formulae (Formula (..), split)
 import qualified Program.Formulae as Formula
 import Program.Rules
-import Utils
 
 data ProofStatement = Formula.ConcreteFormula `By` Rule
   deriving (Show)
@@ -16,7 +15,7 @@ type ProofStatements = [ProofStatement]
 newtype Goal = Goal Formula.ConcreteFormula
   deriving (Show)
 
-newtype Context = Context (S.Set Formula.ConcreteFormula)
+newtype Context = Context {_ctx :: S.Set Formula.ConcreteFormula}
   deriving (Show)
 
 {-
@@ -36,6 +35,8 @@ basic algorithm layout:
 note that AX doesn't require that the context has any assumptions! so an initially "empty" context
 will not cause the algorithm to fail; although the context is never really empty, it always contains bottom (Void) - well should it?
 -}
+
+-- note: might need to check if the substitution terms are present in the context?
 proofcheck' :: Context -> ProofStatement -> Bool
 -- SYNTACTIC EQUALITY.
 proofcheck' (Context ctx) (f `By` AS) = S.member f ctx

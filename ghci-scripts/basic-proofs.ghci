@@ -7,6 +7,9 @@ import Program.ProofStatement
 import Program.Rules
 import Control.Monad.State
 import qualified Data.Set as S
+import qualified Data.Map as M
+
+-- proof of the K combinator using the axiom A -> B -> A
 
 let f1 = Variable "X" :->: Variable "Y" :->: Variable "X"
 
@@ -14,6 +17,8 @@ let st1 = [f1 `By` AX K]
 
 let p1 = evalState (proofcheck st1) (Context S.empty)
 
+
+-- A ⊢ B -> A
 
 let f21 = Variable "A"
 let f22 = Variable "A" :->: Variable "B" :->: Variable "A"
@@ -24,5 +29,35 @@ let st22 = [f22 `By` AX K]
 let st23 = [f23 `By` MP]
 
 let p2 = evalState (proofcheck (st21 ++ st22 ++ st23)) (Context (S.fromList [f21]))
+
+-- not part of the proof
 let st23p = proofcheck' (Context (S.fromList [f21, f22])) $ head st23
+
+
+-- commutativity of conjunction; A ^ B ⊢ B ^ A
+
+let f33 = Variable "A" :&: Variable "B"
+
+let f31 = f33 :->: Variable "A"
+let f32 = f33 :->: Variable "B"
+-- f33 should've been here
+let f34 = Variable "A"
+let f35 = Variable "B"
+-- I HAD ACCIDENTALLY WRITTEN B -> A INSTEAD OF B ^ A AND SPENT 30 MINS DEBUGGING THIS FUUUUUUUUUUUUUUUUUUUUUUUCk
+let f36 = Variable "B" :->: Variable "A" :->: (Variable "B" :&: Variable "A")
+let f37 = Variable "A" :->: (Variable "B" :&: Variable "A")
+let f38 = Variable "B" :&: Variable "A"
+
+let st31 = [f31 `By` AX (CONJ_ELIM Rhs)]
+let st32 = [f32 `By` AX (CONJ_ELIM Lhs)]
+let st33 = [f33 `By` AS]
+let st34 = [f34 `By` MP]
+let st35 = [f35 `By` MP]
+let st36 = [f36 `By` AX CONJ_INTRO]
+let st37 = [f37 `By` MP]
+let st38 = [f38 `By` MP]
+
+let st3 = st31 ++ st32 ++ st33 ++ st34 ++ st35 ++ st36 ++ st37 ++ st38
+
+let p3 = evalState (proofcheck st3) (Context (S.fromList [f33]))
 

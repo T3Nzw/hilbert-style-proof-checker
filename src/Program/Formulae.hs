@@ -10,9 +10,6 @@ type Identifier = String
 
 type Context a b = M.Map Identifier b
 
--- might need it for the parser?
-data Op = And | Or | Implies
-
 data Substitution a = String :~> Formula a
   deriving (Show, Eq, Ord)
 
@@ -44,28 +41,6 @@ type MetaFormula = Formula Meta
 
 type EqState = State (Context FormulaVariables ConcreteFormula) Bool
 
--- the credit goes to ChatGPT for instructing me to implement
--- syntactic equality! i was recursively calling (==) in my
--- (==) implementation and it was leading to weird stuf...
--- (the weird stuff being an inconsistent axiomatic system)
-syntacticEq :: Formula a -> Formula a -> Bool
-syntacticEq Void Void = True
-syntacticEq (Variable x) (Variable y) = x == y
-syntacticEq (Negation lhs) (Negation rhs) = syntacticEq lhs rhs
-syntacticEq (lhs1 :&: rhs1) (lhs2 :&: rhs2) =
-  syntacticEq lhs1 lhs2 && syntacticEq rhs1 rhs2
-syntacticEq (lhs1 :|: rhs1) (lhs2 :|: rhs2) =
-  syntacticEq lhs1 lhs2 && syntacticEq rhs1 rhs2
-syntacticEq (lhs1 :->: rhs1) (lhs2 :->: rhs2) =
-  syntacticEq lhs1 lhs2 && syntacticEq rhs1 rhs2
-syntacticEq (Forall x lhs) (Forall y rhs) =
-  x == y && syntacticEq lhs rhs
-syntacticEq (Exists x lhs) (Exists y rhs) =
-  x == y && syntacticEq lhs rhs
-syntacticEq (lhs `With` (x :~> lsub)) (rhs `With` (y :~> rsub)) =
-  syntacticEq lhs rhs && x == y && syntacticEq lsub rsub
-syntacticEq _ _ = False
-
 match :: MetaFormula -> ConcreteFormula -> Bool
 -- apparently equivalence relations are NOT symmetric 'round here :)
 -- TODO: potentially just pattern match the opposite case? helper qctx x (Variable y)?
@@ -83,14 +58,14 @@ match lhs rhs = evalState (helper M.empty lhs rhs) M.empty
     helper _ Void Void = pure True
     helper qctx (Variable x) y =
       case M.lookup x qctx of
-        Just z -> pure $ syntacticEq y (Variable z)
+        Just z -> pure $ y == Variable z
         Nothing -> do
           fctx <- get
           case M.lookup x fctx of
             Nothing -> do
               modify $ M.insert x y
               pure True
-            Just z -> pure $ syntacticEq y z
+            Just z -> pure $ y == z
     helper qctx (Negation lhs) (Negation rhs) = helper qctx lhs rhs
     helper qctx (lhs1 :&: rhs1) (lhs2 :&: rhs2) = do
       res1 <- helper qctx lhs1 lhs2

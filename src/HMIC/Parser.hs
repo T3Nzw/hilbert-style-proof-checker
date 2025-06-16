@@ -10,6 +10,7 @@ import qualified Program.Formulae as Formula
 import Program.ProofStatement
 import qualified Program.Rules as Rule
 import Program.Theorem
+import qualified Utils
 
 keywords :: [String]
 keywords = ["theorem", ":=", "assume", "begin", "by", "qed"]
@@ -39,6 +40,11 @@ parseIdentifier = upper >>= \x -> (x :) <$> many' (lower <|> digit <|> char '_')
 
 parseFormula :: Parser Formula.ConcreteFormula
 parseFormula = do
+  -- consume all characters until "by" is encountered,
+  -- meaning everything that comprises the formula in a statement
+  -- is parsed and then tokenised for further precedence parsing
+  tokens <- consumeUntil "by" >>= \s -> pure $ Utils.tokenise s
+  -- TODO precedence parsing...
   return Formula.Void
 
 parseGoal :: Parser Goal
