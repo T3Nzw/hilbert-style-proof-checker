@@ -6,9 +6,7 @@ module Program.ProofStatement
     ProofStatements,
     Goal (..),
     Context (..),
-    -- | validate a series of proof statements
     proofcheck,
-    -- | validate a single proof statement
     proofcheck',
   )
 where
@@ -51,7 +49,7 @@ note that AX doesn't require that the context has any assumptions! so an initial
 will not cause the algorithm to fail
 -}
 
--- note: might need to check if the substitution terms are present in the context?
+-- validate a single proof statement
 proofcheck' :: Context -> ProofStatement -> Bool
 -- SYNTACTIC EQUALITY.
 proofcheck' (Context ctx) (f `By` AS) = S.member f ctx

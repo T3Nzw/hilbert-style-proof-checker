@@ -11,10 +11,6 @@ where
 import qualified Data.Set as S
 import Program.Formulae
 
--- various utilities shoved in here because i have no idea
--- how to split those in modules properly
--- (1-2 functions MAX per module doesn't seem right )
-
 elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool
 elemBy _ _ [] = False
 elemBy cmp x (y : ys) = x `cmp` y || elemBy cmp x ys

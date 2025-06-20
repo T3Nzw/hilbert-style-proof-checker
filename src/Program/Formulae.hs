@@ -60,10 +60,6 @@ data FormulaVariables
 
 type EqState = State (Context FormulaVariables ConcreteFormula) Bool
 
--- wanted to be a good programmer and add Haddock-style comments,
--- but i don't even know how to display them in neovim :(
--- update: it only seems to work if i add them at the export site lol
-
 -- | match a concrete formula to a metaformula,
 -- and return the result and generated context of constraints
 match :: MetaFormula -> ConcreteFormula -> (Bool, Context FormulaVariables ConcreteFormula)

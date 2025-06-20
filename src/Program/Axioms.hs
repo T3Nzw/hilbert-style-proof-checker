@@ -7,16 +7,6 @@ import Program.Formulae
 data Position = Lhs | Rhs
   deriving (Show, Eq, Ord)
 
--- TODO extend compile-time type safety by
--- enforcing UNIV_WITNESS and SUB_EXIST
--- to only accept substitution formulae
--- (Formula `With` Substitution).
--- as of now, it's perfectly okay to do
--- some sort of runtime pattern matching
--- and just fail if the type is not a
--- substitution formula, but i'd love to
--- play around with Haskell's type system a bit more
-
 data Axiom
   = S
   | K
@@ -91,10 +81,8 @@ matchToMetaFormula CONJ_INTRO = conjIntro
 matchToMetaFormula (DISJ_INTRO Lhs) = disjIntroLeft
 matchToMetaFormula (DISJ_INTRO Rhs) = disjIntroRight
 matchToMetaFormula DISJ_ELIM = disjElim
--- TODO potentially apply some substitution on the bound variable!
 matchToMetaFormula UNIV_WITNESS = univWitness
 matchToMetaFormula UNIV_IMPLIES = univImplies
--- TODO same as above
 matchToMetaFormula SUB_EXIST = subExist
 matchToMetaFormula EX_IMPLIES = exImplies
 matchToMetaFormula EX_FALSO = exFalso
