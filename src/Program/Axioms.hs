@@ -1,9 +1,21 @@
+{-# LANGUAGE DataKinds #-}
+
 module Program.Axioms where
 
 import Program.Formulae
 
 data Position = Lhs | Rhs
   deriving (Show, Eq, Ord)
+
+-- TODO extend compile-time type safety by
+-- enforcing UNIV_WITNESS and SUB_EXIST
+-- to only accept substitution formulae
+-- (Formula `With` Substitution).
+-- as of now, it's perfectly okay to do
+-- some sort of runtime pattern matching
+-- and just fail if the type is not a
+-- substitution formula, but i'd love to
+-- play around with Haskell's type system a bit more
 
 data Axiom
   = S
@@ -12,16 +24,13 @@ data Axiom
   | CONJ_INTRO
   | DISJ_INTRO Position
   | DISJ_ELIM
-  | UNIV_WITNESS ConcreteFormula
+  | UNIV_WITNESS
   | UNIV_IMPLIES
-  | SUB_EXIST ConcreteFormula
+  | SUB_EXIST
   | EX_IMPLIES
   | EX_FALSO
   | STAB
   deriving (Show, Eq)
-
--- really, i've represented A, B, and C as ordinary variables, but they're supposed to be metavariables :)
--- i don't think that breaks the equality algorithm? at least i hope not
 
 -- axiom schemas in:
 
@@ -83,10 +92,10 @@ matchToMetaFormula (DISJ_INTRO Lhs) = disjIntroLeft
 matchToMetaFormula (DISJ_INTRO Rhs) = disjIntroRight
 matchToMetaFormula DISJ_ELIM = disjElim
 -- TODO potentially apply some substitution on the bound variable!
-matchToMetaFormula (UNIV_WITNESS subst) = univWitness
+matchToMetaFormula UNIV_WITNESS = univWitness
 matchToMetaFormula UNIV_IMPLIES = univImplies
 -- TODO same as above
-matchToMetaFormula (SUB_EXIST subst) = subExist
+matchToMetaFormula SUB_EXIST = subExist
 matchToMetaFormula EX_IMPLIES = exImplies
 matchToMetaFormula EX_FALSO = exFalso
 matchToMetaFormula STAB = stab

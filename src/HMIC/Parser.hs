@@ -43,6 +43,7 @@ parseFormula = do
   -- consume all characters until "by" is encountered,
   -- meaning everything that comprises the formula in a statement
   -- is parsed and then tokenised for further precedence parsing
+  -- lowkey doesn't work since a formula might also be followed by ',' or '.'
   tokens <- consumeUntil "by" >>= \s -> pure $ Utils.tokenise s
   -- TODO precedence parsing...
   return Formula.Void
@@ -76,13 +77,13 @@ parseAxiom = do
   case axiom of
     "S" -> return Axiom.S
     "K" -> return Axiom.K
-    "CONJ_ELIM" -> Axiom.CONJ_ELIM <$> parsePosition
+    "CONJ_ELIM" -> Axiom.CONJ_ELIM <$> (spaces1 >> parsePosition)
     "CONJ_INTRO" -> return Axiom.CONJ_INTRO
-    "DISJ_INTRO" -> Axiom.DISJ_INTRO <$> parsePosition
+    "DISJ_INTRO" -> Axiom.DISJ_INTRO <$> (spaces1 >> parsePosition)
     "DISJ_ELIM" -> return Axiom.DISJ_ELIM
-    "UNIV_WITNESS" -> Axiom.UNIV_WITNESS <$> parseFormula
+    "UNIV_WITNESS" -> return Axiom.UNIV_WITNESS
     "UNIV_IMPLIES" -> return Axiom.UNIV_IMPLIES
-    "SUB_EXIST" -> Axiom.SUB_EXIST <$> parseFormula
+    "SUB_EXIST" -> return Axiom.SUB_EXIST
     "EX_IMPLIES" -> return Axiom.EX_IMPLIES
     "EX_FALSO" -> return Axiom.EX_FALSO
     "STAB" -> return Axiom.STAB
@@ -93,7 +94,7 @@ parseRule = do
   rule <- oneOfS rules
   case rule of
     "AS" -> return Rule.AS
-    "AX" -> Rule.AX <$> parseAxiom
+    "AX" -> Rule.AX <$> (spaces1 >> parseAxiom)
     "MP" -> return Rule.MP
     "GEN" -> return Rule.GEN
     _ -> error "this can never happen"
@@ -101,7 +102,9 @@ parseRule = do
 parseProofStatement :: Parser ProofStatement
 parseProofStatement = do
   statement <- parseFormula
-  _ <- spaces1
+  -- unfortunately it looks a bit inconsistent,
+  -- but i promise that consumeUntil in parseFormula
+  -- consumes the whitespaces as well...
   _ <- string "by"
   _ <- spaces1
   rule <- parseRule

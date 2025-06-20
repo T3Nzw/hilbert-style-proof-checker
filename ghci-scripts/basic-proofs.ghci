@@ -119,4 +119,36 @@ let p7 = evalState (proofcheck pss7) (Context S.empty)
 let goal = Goal $ Variable "A" :->: Variable "A"
 
 let t7 = prove $ Theorem "identity" goal (Context S.empty) pss7
+-- wrong goal! should return Left "goal not derived"
+let t7fail = prove $ Theorem "identityFail" (Goal $ Variable "A") (Context S.empty) pss7
 
+-- contradiction; !A -> A -> B  == (A -> btm) -> A -> B
+-- assume !A == (A -> btm) (bc of deduction theorem)
+
+-- 1. btm -> B  ; EX_FALSO
+-- 2. A -> btm  ; AS
+-- 3. (A -> btm -> B) -> (A -> btm) -> A -> B
+-- 4. somehow derive A -> btm -> B ??
+
+-- \forall x.A ⊢ \exists x.A
+
+let a = Variable "A"
+let suba = a `With` ("x" :~> Variable "t")
+
+let f91 = Forall "x" a
+let f92 = f91 :->: suba
+let f93 = suba
+let f94 = suba :->: (Exists "x" a)
+let f95 = Exists "x" a
+
+let st91 = [f91 `By` AS]
+let st92 = [f92 `By` AX UNIV_WITNESS]
+let st93 = [f93 `By` MP]
+let st94 = [f94 `By` AX SUB_EXIST]
+let st95 = [f95 `By` MP]
+
+let pss9 = st91 ++ st92 ++ st93 ++ st94 ++ st95
+
+let p9 = evalState (proofcheck pss9) (Context (S.fromList [f91]))
+
+let t9 = runState (proofcheck pss9) (Context (S.fromList [f91]))

@@ -20,7 +20,7 @@ theorem <identifier> :=
 - Formulae:
 
 ```
-<formula>      ::= void | <variable> | !<formula> | <formula> <logical_symbol> <formula> | <quantifier> <variable>. <formula> | <formula>[<variable> ~> <formula>]
+<formula>         ::= void | <variable> | !<formula> | <formula> <logical_symbol> <formula> | <quantifier> <variable>. <formula> | <formula>[<variable> ~> <formula>]
 <variable>        ::= {'a', 'b', ..., 'z'}+
 <logical_symbol>  ::= "&" | "|" | "->"
 <quantifier>      ::= "\forall" | "\exists"
@@ -48,9 +48,9 @@ names are kinda shit ngl
 4.  CONJ_INTRO            :  A -> B -> A & B
 5.  DISJ_INTRO            :  A -> A | B; B -> A | B
 6.  DISJ_ELIM             :  (A -> C) -> (B -> C) -> A | B -> C
-7.  UNIV_WITNESS <subst>  :  \forall x. A -> A [x ~> <subst>]
+7.  UNIV_WITNESS          :  \forall x. A -> A [x ~> t], t - formula
 8.  UNIV_IMPLIES          :  \forall x. (B -> A) -> (B -> \forall x. A) where x not in FV(B)
-9.  SUB_EXIST <subst>     :  A[x ~> <subst>] -> \exists x. A
+9.  SUB_EXIST             :  A[x ~> t] -> \exists x. A, t - formula
 10. EX_IMPLIES            :  \forall x. (A -> B) -> (\exists x. A -> B) where x not in FV(B)
 11. EX_FALSO              :  void -> A
 12. STAB                  :  !!A -> A

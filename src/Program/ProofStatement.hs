@@ -1,14 +1,25 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Program.ProofStatement where
+module Program.ProofStatement
+  ( ProofStatement (..),
+    ProofStatements,
+    Goal (..),
+    Context (..),
+    -- | validate a series of proof statements
+    proofcheck,
+    -- | validate a single proof statement
+    proofcheck',
+  )
+where
 
 import Control.Monad.State (MonadState (get), State, modify)
 import qualified Data.Set as S
 import Program.Axioms (matchToMetaFormula)
-import Program.Formulae (Formula (..), split)
+import Program.Formulae (Formula (..))
 import qualified Program.Formulae as Formula
 import Program.Rules
+import qualified Utils
 
 data ProofStatement = Formula.ConcreteFormula `By` Rule
   deriving (Show)
@@ -37,14 +48,14 @@ basic algorithm layout:
   3.4. ok
   add the formula to the context.
 note that AX doesn't require that the context has any assumptions! so an initially "empty" context
-will not cause the algorithm to fail; although the context is never really empty, it always contains bottom (Void) - well should it?
+will not cause the algorithm to fail
 -}
 
 -- note: might need to check if the substitution terms are present in the context?
 proofcheck' :: Context -> ProofStatement -> Bool
 -- SYNTACTIC EQUALITY.
 proofcheck' (Context ctx) (f `By` AS) = S.member f ctx
-proofcheck' _ (f `By` AX axiom) = Formula.match axiomFormula f
+proofcheck' _ (f `By` AX axiom) = fst (Formula.match axiomFormula f) && Utils.validQuantified f
   where
     axiomFormula = matchToMetaFormula axiom
 proofcheck' (Context ctx) (f `By` MP) = match ctx (S.toList ctx) f
@@ -56,7 +67,7 @@ proofcheck' (Context ctx) (f `By` MP) = match ctx (S.toList ctx) f
 -- assuming split works correctly
 proofcheck' (Context ctx) (Formula.Forall x f `By` GEN) = S.member f ctx && notfree
   where
-    notfree = all ((x `notElem`) . snd . split) ctx
+    notfree = all ((x `notElem`) . snd . Utils.split) ctx
 proofcheck' _ _ = False
 
 -- not necessary to return the context, but might be useful for future improvements :)
@@ -66,6 +77,8 @@ type ProofState = State Context (Maybe ProofStatement)
 -- this one is a bit backwards - you would expect to return Just ...
 -- if the function succeeds, and return Nothing if it fails :D
 -- returns a value iff the proofcheck has failed, and if so, where - thus the Just value
+
+-- | validate a series of proof statements
 proofcheck :: ProofStatements -> ProofState
 -- foldr is for losers anyway
 proofcheck [] = pure Nothing

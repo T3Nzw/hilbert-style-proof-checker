@@ -6,6 +6,8 @@ import Program.Formulae
 import Program.ProofStatement (ProofStatement)
 import qualified Program.ProofStatement as PS
 
+type Identifier = String
+
 data Theorem = Theorem Identifier PS.Goal PS.Context PS.ProofStatements
 
 prove :: Theorem -> Either String (Maybe ProofStatement)
