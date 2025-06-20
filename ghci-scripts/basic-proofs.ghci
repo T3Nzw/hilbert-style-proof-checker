@@ -152,3 +152,5 @@ let pss9 = st91 ++ st92 ++ st93 ++ st94 ++ st95
 let p9 = evalState (proofcheck pss9) (Context (S.fromList [f91]))
 
 let t9 = runState (proofcheck pss9) (Context (S.fromList [f91]))
+
+

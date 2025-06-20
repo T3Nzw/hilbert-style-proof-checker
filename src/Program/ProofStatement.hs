@@ -53,7 +53,7 @@ will not cause the algorithm to fail
 proofcheck' :: Context -> ProofStatement -> Bool
 -- SYNTACTIC EQUALITY.
 proofcheck' (Context ctx) (f `By` AS) = S.member f ctx
-proofcheck' _ (f `By` AX axiom) = fst (Formula.match axiomFormula f) && Utils.validQuantified f
+proofcheck' _ (f `By` AX axiom) = fst (Formula.match axiomFormula f) && Utils.validQuantified f && Utils.validFree f
   where
     axiomFormula = matchToMetaFormula axiom
 proofcheck' (Context ctx) (f `By` MP) = match ctx (S.toList ctx) f

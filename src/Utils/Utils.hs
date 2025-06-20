@@ -5,6 +5,8 @@ module Utils
     tokenise,
     split,
     validQuantified,
+    isFreeIn,
+    validFree,
   )
 where
 
@@ -53,6 +55,11 @@ split = helper S.empty S.empty
         (fbv, ffv) = helper bv fv f
         (sbv, sfv) = helper bv fv subst
 
+type Identifier = String
+
+isFreeIn :: Identifier -> ConcreteFormula -> Bool
+isFreeIn x f = S.member x $ snd $ split f
+
 -- i believe this is more appropriate for axioms,
 -- since pattern matching should only be top-level
 -- also, it's much easier to make a top-level function
@@ -65,3 +72,14 @@ validQuantified (Forall x _ :->: (_ :->: (Forall y _))) = x == y
 validQuantified (_ `With` sub :->: (Exists x _)) = sub._var == x
 validQuantified (Forall x _ :->: (Exists y _)) = x == y
 validQuantified _ = True
+
+-- TODO check if correctly implemented
+
+-- | check if free variable constraints
+-- are satisfied in accordance with certain axioms
+validFree :: ConcreteFormula -> Bool
+validFree (Forall x (fb :->: _) :->: (_ :->: Forall _ _)) =
+  not $ isFreeIn x fb -- should be ok since the axiom schema needs to be matched first:)
+validFree (Forall x (_ :->: fb) :->: (Exists _ _ :->: _)) =
+  not $ isFreeIn x fb
+validFree _ = True
