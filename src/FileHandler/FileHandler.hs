@@ -22,7 +22,7 @@ dothestuff = do
           case res of
             Left _ -> putStrLn "could not open file"
             Right contents -> do
-              case evalResult contents of
+              case evalP contents of
                 Left err -> putStrLn $ "Could not parse file:\n" ++ show err
                 Right (Theorems theorems) -> do
                   print theorems

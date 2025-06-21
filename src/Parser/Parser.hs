@@ -9,13 +9,16 @@
 -- modified to be deterministic (unlike the implementation
 -- described in the paper above)
 -- using the Either monad :)
+-- the previous one was technically also deteministic
+-- since it would always return the head of the list
+-- of all the parsed terms, but it didn't allow for
+-- descriptive error messages
 
 module Parser where
 
 import Control.Applicative
 import Control.Monad
 import Data.Char (isAscii, isAsciiLower, isAsciiUpper, isDigit)
-import Data.Either (fromLeft)
 
 newtype ParseError = ParseError {_desc :: String}
 
@@ -145,6 +148,9 @@ repeatP :: Int -> Parser a -> Parser [a]
 repeatP 0 _ = pure []
 repeatP n p = p >>= \x -> (x :) <$> repeatP (n - 1) p
 
+optional :: Parser a -> Parser (Maybe a)
+optional p = (Just <$> p) <|> pure Nothing
+
 -- TODO potentially make it somewhat polymorphic
 oneOf :: [Char] -> Parser Char
 oneOf = foldr (\x xs -> char x <|> xs) zero
@@ -157,6 +163,12 @@ spaces = void $ many' space
 
 spaces1 :: Parser ()
 spaces1 = void $ many1 space
+
+intervals :: Parser ()
+intervals = void $ many' (char ' ' <|> char '\t' <|> char '\n')
+
+intervals1 :: Parser ()
+intervals1 = void $ many1 (char ' ' <|> char '\t' <|> char '\n')
 
 token :: Parser a -> Parser a
 token p = spaces *> p <* spaces
@@ -176,6 +188,12 @@ tokenise :: Parser [String]
 tokenise = tokeniseBy notInterval
   where
     notInterval = sat (\x -> x /= ' ' && x /= '\n' && x /= '\t')
+
+lookahead :: Parser a -> Parser a
+lookahead p = Parser $ \input -> do
+  case _run p input of
+    Left err -> Left err
+    Right (res, _) -> Right (res, input)
 
 consumeUntil :: String -> Parser String
 consumeUntil s = Parser $ \input -> _run (repeatP (index 0 input s) item) input -- eww
@@ -197,7 +215,7 @@ label desc (Parser p) = Parser $ \input -> do
 
 class Parseable a where
   parser :: Parser a
-  evalResult :: String -> Either ParseError a
+  evalP :: String -> Either ParseError a
 
   default parser :: (Read a) => Parser a
   parser = Parser $ \input -> do
@@ -205,7 +223,7 @@ class Parseable a where
       [(x, rest)] -> Right (x, rest)
       _ -> Left $ ParseError "default parser implementation failed"
 
-  default evalResult :: String -> Either ParseError a
-  evalResult input = fst <$> _run parser input
+  default evalP :: String -> Either ParseError a
+  evalP input = fst <$> _run parser input
 
   {-# MINIMAL parser #-}

@@ -122,14 +122,6 @@ let t7 = prove $ Theorem "identity" goal (Context S.empty) pss7
 -- wrong goal! should return Left "goal not derived"
 let t7fail = prove $ Theorem "identityFail" (Goal $ Variable "A") (Context S.empty) pss7
 
--- contradiction; !A -> A -> B  == (A -> btm) -> A -> B
--- assume !A == (A -> btm) (bc of deduction theorem)
-
--- 1. btm -> B  ; EX_FALSO
--- 2. A -> btm  ; AS
--- 3. (A -> btm -> B) -> (A -> btm) -> A -> B
--- 4. somehow derive A -> btm -> B ??
-
 -- \forall x.A ⊢ \exists x.A
 
 let a = Variable "A"
@@ -152,5 +144,3 @@ let pss9 = st91 ++ st92 ++ st93 ++ st94 ++ st95
 let p9 = evalState (proofcheck pss9) (Context (S.fromList [f91]))
 
 let t9 = runState (proofcheck pss9) (Context (S.fromList [f91]))
-
-

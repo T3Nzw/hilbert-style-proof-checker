@@ -3,6 +3,7 @@
 
 module Program.Formulae
   ( Formula (..),
+    ConcreteSubstitution,
     ConcreteFormula,
     MetaFormula,
     Substitution (..),
@@ -47,6 +48,8 @@ infixr 6 :->:
 data Concrete
 
 data Meta
+
+type ConcreteSubstitution = Substitution Concrete
 
 type ConcreteFormula = Formula Concrete
 

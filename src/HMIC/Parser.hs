@@ -1,4 +1,3 @@
-{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE InstanceSigs #-}
 
 module HMIC.Parser where
@@ -6,19 +5,13 @@ module HMIC.Parser where
 import Control.Applicative ((<|>))
 import Control.Monad (void)
 import qualified Data.Set as S
+import qualified HMIC.FormulaParser as FP
 import Parser
 import qualified Program.Axioms as Axiom
 import qualified Program.Formulae as Formula
 import Program.ProofStatement
 import qualified Program.Rules as Rule
 import Program.Theorem
-import qualified Utils
-
-intervals :: Parser ()
-intervals = void $ many' (char ' ' <|> char '\t' <|> char '\n')
-
-intervals1 :: Parser ()
-intervals1 = void $ many1 (char ' ' <|> char '\t' <|> char '\n')
 
 -- not too sure what i would need them for:)
 keywords :: [String]
@@ -48,15 +41,7 @@ parseIdentifier :: Parser String
 parseIdentifier = label "invalid identifier name" $ upper >>= \x -> (x :) <$> many' (lower <|> digit <|> char '_')
 
 parseFormula :: Parser Formula.ConcreteFormula
-parseFormula = do
-  -- consume all characters until "by" is encountered,
-  -- meaning everything that comprises the formula in a statement
-  -- is parsed and then tokenised for further precedence parsing
-  -- lowkey doesn't work since a formula might also be followed by ',' or '.'
-  -- tokens <- consumeUntil "by" >>= \s -> pure $ Utils.tokenise s
-  -- TODO precedence parsing...
-  _ <- string "Void"
-  return Formula.Void
+parseFormula = parser
 
 parseGoal :: Parser Goal
 parseGoal = do
@@ -144,7 +129,6 @@ parseQed = do
   _ <- label "missing end of statement delimiter (.) after qed" $ char '.'
   return ()
 
--- add labels to the smaller parsers:)
 parseTheorem :: Parser Theorem
 parseTheorem = do
   _ <- intervals

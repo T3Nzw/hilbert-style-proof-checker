@@ -1,16 +1,15 @@
-theorem Id :=
+theorem K :=
   assume Void.
-  goal Void.
-  begin
+  goal A -> B -> A.
+  begin.
+    A -> B -> A by AX K.
   qed.
 
-theorem Idd :=
-  assume Void.
-  goal Void.
+theorem T1 :=
+  assume A.
+  goal B -> A.
   begin.
-    Void by AS.
-    Void by AX EX_FALSO.
-    Void by AX CONJ_ELIM left.
-    Void by MP.
-    Void by GEN.
+    A by AS.
+    A -> B -> A by AX K.
+    B -> A by MP.
   qed.
