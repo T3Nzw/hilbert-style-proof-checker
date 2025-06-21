@@ -1,0 +1,16 @@
+theorem Id :=
+  assume Void.
+  goal Void.
+  begin
+  qed.
+
+theorem Idd :=
+  assume Void.
+  goal Void.
+  begin.
+    Void by AS.
+    Void by AX EX_FALSO.
+    Void by AX CONJ_ELIM left.
+    Void by MP.
+    Void by GEN.
+  qed.

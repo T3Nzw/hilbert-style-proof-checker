@@ -73,9 +73,9 @@ executable hilbert-systems
                       transformers
 
     -- Directories containing source files.
-    hs-source-dirs:   app, src, src/Parser, src/HMIC, src/Program, src/Utils
+    hs-source-dirs:   app, src, src/Parser, src/HMIC, src/Program, src/Utils, src/FileHandler
 
     -- Base language which the package is written in.
     default-language: Haskell2010
 
-    other-modules: Parser, Precedence, HMIC.Parser, Program.Theorem, Program.Formulae, Program.Axioms, Program.Rules, Program.ProofStatement, Utils, HMIC.FormulaParser
+    other-modules: Parser, Precedence, HMIC.Parser, Program.Theorem, Program.Formulae, Program.Axioms, Program.Rules, Program.ProofStatement, Utils, HMIC.FormulaParser, FileHandler 

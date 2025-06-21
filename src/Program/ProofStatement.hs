@@ -26,10 +26,10 @@ type ProofStatements = [ProofStatement]
 
 newtype Goal = Goal Formula.ConcreteFormula
   deriving stock (Show)
-  deriving newtype (Eq, Ord)
+  deriving newtype (Eq, Ord) -- lowkey useless but looks fancy
 
 newtype Context = Context {_ctx :: S.Set Formula.ConcreteFormula}
-  deriving (Show)
+  deriving newtype (Show)
 
 {-
 basic algorithm layout:
@@ -49,20 +49,17 @@ note that AX doesn't require that the context has any assumptions! so an initial
 will not cause the algorithm to fail
 -}
 
--- validate a single proof statement
+-- | validate a single proof statement
 proofcheck' :: Context -> ProofStatement -> Bool
--- SYNTACTIC EQUALITY.
 proofcheck' (Context ctx) (f `By` AS) = S.member f ctx
 proofcheck' _ (f `By` AX axiom) = fst (Formula.match axiomFormula f) && Utils.validQuantified f && Utils.validFree f
   where
     axiomFormula = matchToMetaFormula axiom
 proofcheck' (Context ctx) (f `By` MP) = match ctx (S.toList ctx) f
   where
-    -- O(nlogn)
     match :: S.Set Formula.ConcreteFormula -> [Formula.ConcreteFormula] -> Formula.ConcreteFormula -> Bool
     match _ [] _ = False
     match og (f : fs) b = S.member (f :->: b) og || match og fs b
--- assuming split works correctly
 proofcheck' (Context ctx) (Formula.Forall x f `By` GEN) = S.member f ctx && notfree
   where
     notfree = all ((x `notElem`) . snd . Utils.split) ctx

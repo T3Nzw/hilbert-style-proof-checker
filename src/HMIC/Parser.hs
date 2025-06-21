@@ -1,8 +1,10 @@
+{-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE InstanceSigs #-}
+
 module HMIC.Parser where
 
--- TODO spaces/spaces1 parsers should also parse newlines and tabs
-
 import Control.Applicative ((<|>))
+import Control.Monad (void)
 import qualified Data.Set as S
 import Parser
 import qualified Program.Axioms as Axiom
@@ -12,6 +14,13 @@ import qualified Program.Rules as Rule
 import Program.Theorem
 import qualified Utils
 
+intervals :: Parser ()
+intervals = void $ many' (char ' ' <|> char '\t' <|> char '\n')
+
+intervals1 :: Parser ()
+intervals1 = void $ many1 (char ' ' <|> char '\t' <|> char '\n')
+
+-- not too sure what i would need them for:)
 keywords :: [String]
 keywords = ["theorem", ":=", "assume", "begin", "by", "qed"]
 
@@ -36,7 +45,7 @@ axioms =
   ]
 
 parseIdentifier :: Parser String
-parseIdentifier = upper >>= \x -> (x :) <$> many' (lower <|> digit <|> char '_')
+parseIdentifier = label "invalid identifier name" $ upper >>= \x -> (x :) <$> many' (lower <|> digit <|> char '_')
 
 parseFormula :: Parser Formula.ConcreteFormula
 parseFormula = do
@@ -44,26 +53,31 @@ parseFormula = do
   -- meaning everything that comprises the formula in a statement
   -- is parsed and then tokenised for further precedence parsing
   -- lowkey doesn't work since a formula might also be followed by ',' or '.'
-  tokens <- consumeUntil "by" >>= \s -> pure $ Utils.tokenise s
+  -- tokens <- consumeUntil "by" >>= \s -> pure $ Utils.tokenise s
   -- TODO precedence parsing...
+  _ <- string "Void"
   return Formula.Void
 
 parseGoal :: Parser Goal
 parseGoal = do
-  _ <- string "goal"
-  _ <- spaces1
+  _ <- label "missing keyword goal" $ string "goal"
+  _ <- intervals1
   f <- parseFormula
-  _ <- spaces
-  _ <- char '.'
+  _ <- intervals
+  _ <- label "missing end of statement delimiter (.) after goal" $ char '.'
   return $ Goal f
 
+-- TODO fix
 parseAssumptions :: Parser Program.ProofStatement.Context
 parseAssumptions = do
-  return $ Context S.empty
+  _ <- label "missing keyword assume" $ string "assume"
+  _ <- intervals1
+  ctx <- many' (parseFormula <* (char ',' <|> char '.'))
+  return $ Context $ S.fromList ctx
 
 parsePosition :: Parser Axiom.Position
 parsePosition = do
-  pos <- oneOfS ["left", "right"]
+  pos <- label "invalid axiom position" $ oneOfS ["left", "right"]
   return $ case pos of
     "left" -> Axiom.Lhs
     "right" -> Axiom.Rhs
@@ -73,13 +87,13 @@ parsePosition = do
 -- too error-prone
 parseAxiom :: Parser Axiom.Axiom
 parseAxiom = do
-  axiom <- oneOfS axioms
+  axiom <- label "invalid axiom name" $ oneOfS axioms
   case axiom of
     "S" -> return Axiom.S
     "K" -> return Axiom.K
-    "CONJ_ELIM" -> Axiom.CONJ_ELIM <$> (spaces1 >> parsePosition)
+    "CONJ_ELIM" -> Axiom.CONJ_ELIM <$> (intervals1 >> parsePosition)
     "CONJ_INTRO" -> return Axiom.CONJ_INTRO
-    "DISJ_INTRO" -> Axiom.DISJ_INTRO <$> (spaces1 >> parsePosition)
+    "DISJ_INTRO" -> Axiom.DISJ_INTRO <$> (intervals1 >> parsePosition)
     "DISJ_ELIM" -> return Axiom.DISJ_ELIM
     "UNIV_WITNESS" -> return Axiom.UNIV_WITNESS
     "UNIV_IMPLIES" -> return Axiom.UNIV_IMPLIES
@@ -91,62 +105,73 @@ parseAxiom = do
 
 parseRule :: Parser Rule.Rule
 parseRule = do
-  rule <- oneOfS rules
+  rule <- label "invalid rule name" $ oneOfS rules
   case rule of
     "AS" -> return Rule.AS
-    "AX" -> Rule.AX <$> (spaces1 >> parseAxiom)
+    "AX" -> Rule.AX <$> (intervals1 >> parseAxiom)
     "MP" -> return Rule.MP
     "GEN" -> return Rule.GEN
     _ -> error "this can never happen"
 
 parseProofStatement :: Parser ProofStatement
 parseProofStatement = do
+  _ <- intervals
   statement <- parseFormula
-  -- unfortunately it looks a bit inconsistent,
-  -- but i promise that consumeUntil in parseFormula
-  -- consumes the whitespaces as well...
-  _ <- string "by"
-  _ <- spaces1
+  _ <- intervals
+  _ <- label "missing keyword by" $ string "by"
+  _ <- intervals1
   rule <- parseRule
-  _ <- spaces
-  _ <- char '.'
+  _ <- intervals
+  _ <- label "missing end of statement delimiter (.) after rule" $ char '.'
   return $ statement `By` rule
 
 parseProofStatements :: Parser ProofStatements
-parseProofStatements = do many' parseProofStatement
+parseProofStatements = many' parseProofStatement
 
 parseBegin :: Parser ()
 parseBegin = do
-  _ <- spaces
-  _ <- string "begin"
-  _ <- spaces
-  _ <- char '.'
+  _ <- intervals
+  _ <- label "missing keyword begin" $ string "begin"
+  _ <- intervals
+  _ <- label "missing end of statement delimiter (.) after begin" $ char '.'
   return ()
 
 parseQed :: Parser ()
 parseQed = do
-  _ <- spaces
-  _ <- string "qed"
-  _ <- spaces
-  _ <- char '.'
+  _ <- intervals
+  _ <- label "missing keyword qed" $ string "qed"
+  _ <- intervals
+  _ <- label "missing end of statement delimiter (.) after qed" $ char '.'
   return ()
 
+-- add labels to the smaller parsers:)
 parseTheorem :: Parser Theorem
 parseTheorem = do
-  _ <- string "theorem"
-  _ <- spaces1
+  _ <- intervals
+  _ <- label "missing keyword theorem" $ string "theorem"
+  _ <- intervals1
   iden <- parseIdentifier
-  _ <- spaces
-  _ <- string ":="
-  _ <- spaces
+  _ <- intervals
+  _ <- label "missing symbol :=" $ string ":="
+  _ <- intervals
   ctx <- parseAssumptions
-  _ <- spaces
+  _ <- intervals
   goal <- parseGoal
-  _ <- spaces
+  _ <- intervals
   _ <- parseBegin
-  _ <- spaces
+  _ <- intervals
   pss <- parseProofStatements
-  _ <- spaces
+  _ <- intervals
   _ <- parseQed
+  _ <- intervals
 
   return $ Theorem iden goal ctx pss
+
+newtype Theorems = Theorems [Theorem]
+
+parseTheorems :: Parser Theorems
+parseTheorems = Theorems <$> all' parseTheorem
+
+instance Parseable Theorems where
+  parser :: Parser Theorems
+  parser = parseTheorems

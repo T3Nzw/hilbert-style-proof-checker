@@ -1,65 +1,84 @@
+{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE LambdaCase #-}
 
+-- TODO make parse errors in various combinators more descriptive
+
 -- resources used:
 -- https://people.cs.nott.ac.uk/pszgmh/monparsing.pdf
+-- modified to be deterministic (unlike the implementation
+-- described in the paper above)
+-- using the Either monad :)
 
 module Parser where
 
 import Control.Applicative
 import Control.Monad
 import Data.Char (isAscii, isAsciiLower, isAsciiUpper, isDigit)
+import Data.Either (fromLeft)
 
-newtype Parser a = Parser {_run :: String -> [(a, String)]}
+newtype ParseError = ParseError {_desc :: String}
+
+instance Show ParseError where
+  show :: ParseError -> String
+  show (ParseError desc) =
+    ">>> Parse error occured:"
+      ++ "\n>>> Description: "
+      ++ desc
+
+newtype Parser a = Parser {_run :: String -> Either ParseError (a, String)}
 
 instance Functor Parser where
   fmap :: (a -> b) -> Parser a -> Parser b
-  fmap f (Parser p) = Parser (\input -> [(f a, res) | (a, res) <- p input])
+  fmap f (Parser p) = Parser $ \input -> do
+    (res, rest) <- p input
+    Right (f res, rest)
 
 instance Applicative Parser where
   pure :: a -> Parser a
-  pure v = Parser (\input -> [(v, input)])
+  pure v = Parser $ \input -> Right (v, input)
 
   (<*>) :: Parser (a -> b) -> Parser a -> Parser b
-  (Parser pf) <*> (Parser p) = Parser $ \input -> [(f x, res) | (f, int) <- pf input, (x, res) <- p int]
+  (Parser pf) <*> (Parser p) = Parser $ \input -> do
+    (f, int) <- pf input
+    (x, res) <- p int
+    Right (f x, res)
 
 instance Monad Parser where
   return :: a -> Parser a
   return = pure
 
   (>>=) :: Parser a -> (a -> Parser b) -> Parser b
-  (Parser p) >>= f = Parser $ \input ->
-    concatMap
-      ( \(x, res) ->
-          let (Parser p') = f x in p' res
-      )
-      (p input)
+  (Parser p) >>= f = Parser $ \input -> do
+    (x, rest) <- p input
+    let Parser p' = f x
+    p' rest
 
 instance Alternative Parser where
   empty :: Parser a
   empty = zero
 
   (<|>) :: Parser a -> Parser a -> Parser a
-  p <|> q = Parser $ \input -> case _run (p `plus` q) input of
-    [] -> []
-    (x : _) -> [x]
+  (Parser p) <|> (Parser q) = Parser $ \input ->
+    case p input of
+      Right res -> Right res
+      Left err1 -> case q input of
+        Right res -> Right res
+        Left err2 -> Left $ ParseError $ "all alternatives failed: " ++ show err1 ++ "---\n" ++ show err2
 
 result :: a -> Parser a
 result = return
 
 zero :: Parser a
-zero = Parser $ const []
+zero = Parser $ \input -> Left $ ParseError ""
 
 item :: Parser Char
 item = Parser $ \case
-  [] -> []
-  (x : xs) -> [(x, xs)]
+  [] -> Left $ ParseError "no input to consume"
+  (x : xs) -> Right (x, xs)
 
 sat :: (Char -> Bool) -> Parser Char
 sat p = item >>= \input -> if p input then result input else zero
-
-plus :: Parser a -> Parser a -> Parser a
-plus p q = Parser $ \input -> _run p input ++ _run q input
 
 char :: Char -> Parser Char
 char x = sat (== x)
@@ -110,6 +129,18 @@ many1 p = do
 zeroOrOne :: Parser a -> Parser [a]
 zeroOrOne p = (: []) <$> p <|> return []
 
+-- | attempts to parse everything; otherwise it fails.
+-- return the first parse error encountered, if one occurs.
+all' :: Parser a -> Parser [a]
+all' p = Parser $ \input -> do
+  case _run (many' p) input of
+    Left _ -> Left $ ParseError "this will never happen"
+    Right (x, xs) -> case xs of
+      [] -> Right (x, xs)
+      _ -> case _run p xs of
+        Left err -> Left err
+        Right _ -> Left $ ParseError "how come it wouldn't have parsed it the first time?"
+
 repeatP :: Int -> Parser a -> Parser [a]
 repeatP 0 _ = pure []
 repeatP n p = p >>= \x -> (x :) <$> repeatP (n - 1) p
@@ -131,10 +162,9 @@ token :: Parser a -> Parser a
 token p = spaces *> p <* spaces
 
 eof :: Parser ()
-eof = Parser $ \input -> ([((), "") | null input])
-
-all :: Parser String
-all = many' item
+eof = Parser $ \case
+  [] -> Right ((), "")
+  _ -> Left $ ParseError "input not exhausted"
 
 branch :: Bool -> Parser a -> Parser a -> Parser a
 branch b t f = Parser $ \input -> if b then _run t input else _run f input
@@ -147,7 +177,6 @@ tokenise = tokeniseBy notInterval
   where
     notInterval = sat (\x -> x /= ' ' && x /= '\n' && x /= '\t')
 
--- a lookahead parser...
 consumeUntil :: String -> Parser String
 consumeUntil s = Parser $ \input -> _run (repeatP (index 0 input s) item) input -- eww
   where
@@ -160,5 +189,23 @@ consumeUntil s = Parser $ \input -> _run (repeatP (index 0 input s) item) input 
       where
         len = length substr
 
+label :: String -> Parser a -> Parser a
+label desc (Parser p) = Parser $ \input -> do
+  case p input of
+    Left _ -> Left $ ParseError desc
+    Right res -> Right res
+
 class Parseable a where
-  parse :: String -> Either String a
+  parser :: Parser a
+  evalResult :: String -> Either ParseError a
+
+  default parser :: (Read a) => Parser a
+  parser = Parser $ \input -> do
+    case reads input of
+      [(x, rest)] -> Right (x, rest)
+      _ -> Left $ ParseError "default parser implementation failed"
+
+  default evalResult :: String -> Either ParseError a
+  evalResult input = fst <$> _run parser input
+
+  {-# MINIMAL parser #-}
