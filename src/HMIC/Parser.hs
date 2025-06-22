@@ -101,7 +101,6 @@ parseRule = do
 
 parseProofStatement :: Parser ProofStatement
 parseProofStatement = do
-  _ <- intervals
   statement <- parseFormula
   _ <- intervals
   _ <- label "missing keyword by" $ string "by"
@@ -114,7 +113,7 @@ parseOof :: Parser ProofStatement
 parseOof = string "oof" >> intervals >> char '.' >> pure Oof
 
 parseProofStatements :: Parser ProofStatements
-parseProofStatements = many' (parseProofStatement <|> parseOof)
+parseProofStatements = many' (itoken parseOof <|> itoken parseProofStatement)
 
 parseBegin :: Parser ()
 parseBegin = do
