@@ -18,7 +18,7 @@ Given the program loads and reads proof primarily from files, it expects a singl
 cabal run hilbert-systems -- -- {file_path}
 ```
 
-*Note that filenames must end in the .hmic extension."
+*Note that filenames must end in the .hmic extension.*
 
 To run one of the example files (provided in the examples directory):
 
