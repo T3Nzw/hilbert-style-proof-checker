@@ -27,6 +27,9 @@ binaryOps =
 itoken :: Parser a -> Parser a
 itoken p = intervals *> p <* intervals
 
+parseVoid :: Parser (Formula a)
+parseVoid = string "Void" >> pure Void
+
 parseVariable :: Parser (Formula a)
 parseVariable = Variable <$> itoken (upper >>= \x -> (x :) <$> many' letter)
 
@@ -65,7 +68,7 @@ parseOperation = string "&" <|> string "|" <|> string "->"
 
 parseAtom :: Parser (Formula a)
 parseAtom = do
-  atom <- parseVariable <|> parseNegation <|> parseQuantifier <|> parseParentheses
+  atom <- parseVoid <|> parseVariable <|> parseNegation <|> parseQuantifier <|> parseParentheses
   subst <- many' parseSubstitution
   pure $ foldl With atom subst
 

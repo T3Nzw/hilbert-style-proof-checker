@@ -110,8 +110,11 @@ parseProofStatement = do
   _ <- label "missing end of statement delimiter \".\" after rule" $ char '.'
   return $ statement `By` rule
 
+parseOof :: Parser ProofStatement
+parseOof = string "oof" >> intervals >> char '.' >> pure Oof
+
 parseProofStatements :: Parser ProofStatements
-parseProofStatements = many' parseProofStatement
+parseProofStatements = many' (parseProofStatement <|> parseOof)
 
 parseBegin :: Parser ()
 parseBegin = do
@@ -136,6 +139,16 @@ parseTheorem = do
   pss <- itoken parseProofStatements
   _ <- itoken parseQed
   return $ Theorem iden goal ctx pss
+
+-- TODO pretty print proofs :)
+parsePrint :: Parser String
+parsePrint = do
+  _ <- string "print"
+  _ <- intervals1
+  iden <- parseIdentifier
+  _ <- intervals
+  _ <- char '.'
+  pure iden
 
 newtype Theorems = Theorems [Theorem]
 

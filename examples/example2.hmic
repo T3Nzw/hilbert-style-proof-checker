@@ -1,0 +1,43 @@
+theorem TheseTheoremsHaveAbsolutelyNoSignificanceWhatsoever :=
+  assume Void.
+  goal Void.
+  begin.
+  qed.
+
+theorem Gen1 :=
+  assume A.
+  goal \forall x, A.
+  begin.
+    \forall x, A by GEN.
+  qed.
+
+theorem Gen2 :=
+  assume \forall x, A.
+  goal \forall x, \forall x, A.
+  begin.
+    \forall x, \forall x, A by GEN.
+  qed.
+
+theorem Exfalso :=
+  assume Void.
+  goal A & B & !A & !B.
+  begin.
+    Void -> A & B & !A & !B by AX EX_FALSO.
+    A & B & !A & !B by MP.
+  qed.
+
+theorem FancierPatternMatchingOfK1 :=
+  assume.
+  goal X -> Y -> X.
+  begin.
+    X -> Y -> X by AX K.
+  qed.
+
+theorem FancierPatternMatchingOfK2 :=
+  assume.
+  goal (V -> S -> T) -> (\exists x, A -> B) -> (V -> (S -> T)).
+  begin.
+    (V -> S -> T) -> (\exists x, A -> B) -> (V -> (S -> T)) by AX K.
+  qed.
+
+

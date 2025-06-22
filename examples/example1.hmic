@@ -28,6 +28,13 @@ theorem CommutativityOfConjunction :=
     B & A by MP.
   qed.
 
+theorem CommutativityOfDisjunction :=
+  assume A | B.
+  goal B | A.
+  begin.
+    oof.
+  qed. 
+
 theorem ForallImpliesExists :=
   assume \forall x, A.
   goal \exists x, A.
@@ -37,4 +44,22 @@ theorem ForallImpliesExists :=
     A[x ~> B] by MP.
     A[x ~> B] -> \exists x, A by AX SUB_EXIST.
     \exists x, A by MP.
+  qed.
+
+theorem Identity := 
+  assume.
+  goal A -> A -> A.
+  begin.
+    A -> A -> A by AX K.
+    A -> (A -> A) -> A by AX K.
+    (A -> (A -> A) -> A) -> (A -> A -> A) -> A -> A by AX S.
+    (A -> A -> A) -> A -> A by MP.
+    A -> A by MP.
+  qed.
+
+theorem DeMorgansLaw1 :=
+  assume !(A | B).
+  goal !A & !B.
+  begin.
+    oof.
   qed.

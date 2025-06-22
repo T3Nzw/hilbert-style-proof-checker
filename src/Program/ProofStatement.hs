@@ -19,8 +19,8 @@ import qualified Program.Formulae as Formula
 import Program.Rules
 import qualified Utils
 
-data ProofStatement = Formula.ConcreteFormula `By` Rule
-  deriving (Show)
+data ProofStatement = Formula.ConcreteFormula `By` Rule | Oof
+  deriving (Show, Eq, Ord)
 
 type ProofStatements = [ProofStatement]
 

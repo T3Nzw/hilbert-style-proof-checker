@@ -30,9 +30,11 @@ getIden (Theorem iden _ _ _) = iden
 
 prove' :: Theorem -> Either String (Maybe ProofStatement)
 prove' (Theorem iden (PS.Goal goal) initctx pss) =
-  case success of
-    Nothing -> if S.member goal ctx then Right Nothing else Left "goal not derived"
-    Just fail -> Right $ Just fail
+  if PS.Oof `elem` pss
+    then Right Nothing
+    else case success of
+      Nothing -> if S.member goal ctx then Right Nothing else Left "goal not derived"
+      Just fail -> Right $ Just fail
   where
     (success, PS.Context ctx) = runState (PS.proofcheck pss) initctx
 
