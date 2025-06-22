@@ -1,5 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
 
+-- TODO fix consuming of whitespaces/tabs/newlines
+
 module HMIC.Parser where
 
 import Control.Applicative ((<|>))
@@ -18,8 +20,7 @@ rules = ["AS", "AX", "MP", "GEN"]
 
 axioms :: [String]
 axioms =
-  [ "S",
-    "K",
+  [ "K",
     "CONJ_ELIM",
     "CONJ_INTRO",
     "DISJ_INTRO",
@@ -29,7 +30,8 @@ axioms =
     "SUB_EXIST",
     "EX_IMPLIES",
     "EX_FALSO",
-    "STAB"
+    "STAB",
+    "S"
   ]
 
 parseIdentifier :: Parser String
