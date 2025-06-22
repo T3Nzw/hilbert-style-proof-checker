@@ -49,7 +49,7 @@ parseGoal = do
 parseAssumptions :: Parser Program.ProofStatement.Context
 parseAssumptions = do
   _ <- label "missing keyword assume" $ string "assume"
-  emptyCtx <|> parseAssumptions'
+  label "invalid assumptions syntax" $ emptyCtx <|> parseAssumptions'
   where
     parseAssumptions' :: Parser Program.ProofStatement.Context
     parseAssumptions' = do
