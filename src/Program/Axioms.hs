@@ -20,7 +20,7 @@ data Axiom
   | EX_IMPLIES
   | EX_FALSO
   | STAB
-  deriving (Show, Eq)
+  deriving (Show, Eq, Ord)
 
 -- axiom schemas in:
 

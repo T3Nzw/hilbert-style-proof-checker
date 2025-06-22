@@ -28,4 +28,13 @@ theorem CommutativityOfConjunction :=
     B & A by MP.
   qed.
 
-
+theorem ForallImpliesExists :=
+  assume \forall x, A.
+  goal \exists x, A.
+  begin.
+    \forall x, A by AS.
+    \forall x, A -> A[x ~> B] by AX UNIV_WITNESS.
+    A[x ~> B] by MP.
+    A[x ~> B] -> \exists x, A by AX SUB_EXIST.
+    \exists x, A by MP.
+  qed.
