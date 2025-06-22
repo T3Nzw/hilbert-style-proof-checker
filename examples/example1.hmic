@@ -27,3 +27,5 @@ theorem CommutativityOfConjunction :=
     A -> B & A by MP.
     B & A by MP.
   qed.
+
+

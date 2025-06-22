@@ -38,7 +38,7 @@ parseQuantifier = do
   q <- itoken (string "\\forall" <|> string "\\exists")
   var <- itoken (many' lower)
   _ <- char ','
-  f <- itoken $ parseFormula 0
+  f <- itoken parseAtom
   pure $
     if q == "\\forall"
       then Forall var f
@@ -55,6 +55,7 @@ parseSubstitution :: Parser (Substitution a)
 parseSubstitution = do
   _ <- char '['
   var <- itoken (many1 lower)
+  _ <- string "~>"
   f <- itoken $ parseFormula 0
   _ <- char ']'
   pure $ var :~> f
