@@ -1,5 +1,5 @@
 theorem K :=
-  assume Void.
+  assume.
   goal A -> B -> A.
   begin.
     A -> B -> A by AX K.

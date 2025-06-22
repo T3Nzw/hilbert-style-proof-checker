@@ -46,13 +46,18 @@ parseGoal = do
   _ <- label "missing end of statement delimiter \".\" after goal" $ char '.'
   return $ Goal f
 
--- TODO fix
 parseAssumptions :: Parser Program.ProofStatement.Context
 parseAssumptions = do
   _ <- label "missing keyword assume" $ string "assume"
-  _ <- intervals1
-  ctx <- many' (parseFormula <* (char ',' <|> char '.'))
-  return $ Context $ S.fromList ctx
+  emptyCtx <|> parseAssumptions'
+  where
+    parseAssumptions' :: Parser Program.ProofStatement.Context
+    parseAssumptions' = do
+      let commaP = many' $ token parseFormula <* char ','
+      let dotP = many1 $ token parseFormula <* char '.'
+      Context . S.fromList <$> (intervals1 >> (commaP >>= \x -> (x ++) <$> dotP))
+    emptyCtx :: Parser Program.ProofStatement.Context
+    emptyCtx = intervals >> char '.' >> pure (Context S.empty)
 
 parsePosition :: Parser Axiom.Position
 parsePosition = do
