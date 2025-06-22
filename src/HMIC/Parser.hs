@@ -3,19 +3,14 @@
 module HMIC.Parser where
 
 import Control.Applicative ((<|>))
-import Control.Monad (void)
 import qualified Data.Set as S
-import qualified HMIC.FormulaParser as FP
+import HMIC.FormulaParser (itoken)
 import Parser
 import qualified Program.Axioms as Axiom
 import qualified Program.Formulae as Formula
 import Program.ProofStatement
 import qualified Program.Rules as Rule
 import Program.Theorem
-
--- not too sure what i would need them for:)
-keywords :: [String]
-keywords = ["theorem", ":=", "assume", "begin", "by", "qed"]
 
 -- could've potentially used maps
 rules :: [String]
@@ -47,9 +42,8 @@ parseGoal :: Parser Goal
 parseGoal = do
   _ <- label "missing keyword goal" $ string "goal"
   _ <- intervals1
-  f <- parseFormula
-  _ <- intervals
-  _ <- label "missing end of statement delimiter (.) after goal" $ char '.'
+  f <- itoken parseFormula
+  _ <- label "missing end of statement delimiter \".\" after goal" $ char '.'
   return $ Goal f
 
 -- TODO fix
@@ -105,9 +99,8 @@ parseProofStatement = do
   _ <- intervals
   _ <- label "missing keyword by" $ string "by"
   _ <- intervals1
-  rule <- parseRule
-  _ <- intervals
-  _ <- label "missing end of statement delimiter (.) after rule" $ char '.'
+  rule <- itoken parseRule
+  _ <- label "missing end of statement delimiter \".\" after rule" $ char '.'
   return $ statement `By` rule
 
 parseProofStatements :: Parser ProofStatements
@@ -115,40 +108,26 @@ parseProofStatements = many' parseProofStatement
 
 parseBegin :: Parser ()
 parseBegin = do
-  _ <- intervals
-  _ <- label "missing keyword begin" $ string "begin"
-  _ <- intervals
-  _ <- label "missing end of statement delimiter (.) after begin" $ char '.'
+  _ <- itoken $ label "missing keyword begin" $ string "begin"
+  _ <- label "missing end of statement delimiter \".\" after begin" $ char '.'
   return ()
 
 parseQed :: Parser ()
 parseQed = do
-  _ <- intervals
-  _ <- label "missing keyword qed" $ string "qed"
-  _ <- intervals
-  _ <- label "missing end of statement delimiter (.) after qed" $ char '.'
+  _ <- itoken $ label "missing keyword qed" $ string "qed"
+  _ <- label "missing end of statement delimiter \".\" after qed" $ char '.'
   return ()
 
 parseTheorem :: Parser Theorem
 parseTheorem = do
-  _ <- intervals
-  _ <- label "missing keyword theorem" $ string "theorem"
-  _ <- intervals1
+  _ <- itoken $ label "missing keyword theorem" $ string "theorem"
   iden <- parseIdentifier
-  _ <- intervals
-  _ <- label "missing symbol :=" $ string ":="
-  _ <- intervals
-  ctx <- parseAssumptions
-  _ <- intervals
-  goal <- parseGoal
-  _ <- intervals
-  _ <- parseBegin
-  _ <- intervals
-  pss <- parseProofStatements
-  _ <- intervals
-  _ <- parseQed
-  _ <- intervals
-
+  _ <- itoken $ label "missing symbol :=" $ string ":="
+  ctx <- itoken parseAssumptions
+  goal <- itoken parseGoal
+  _ <- itoken parseBegin
+  pss <- itoken parseProofStatements
+  _ <- itoken parseQed
   return $ Theorem iden goal ctx pss
 
 newtype Theorems = Theorems [Theorem]
