@@ -13,3 +13,17 @@ theorem T1 :=
     A -> B -> A by AX K.
     B -> A by MP.
   qed.
+
+theorem CommutativityOfConjunction :=
+  assume A & B.
+  goal B & A.
+  begin.
+    A & B by AS.
+    A & B -> A by AX CONJ_ELIM right.
+    A & B -> B by AX CONJ_ELIM left.
+    A by MP.
+    B by MP.
+    B -> A -> B & A by AX CONJ_INTRO.
+    A -> B & A by MP.
+    B & A by MP.
+  qed.

@@ -38,7 +38,7 @@ axioms =
   ]
 
 parseIdentifier :: Parser String
-parseIdentifier = label "invalid identifier name" $ upper >>= \x -> (x :) <$> many' (lower <|> digit <|> char '_')
+parseIdentifier = label "invalid identifier name" $ upper >>= \x -> (x :) <$> many' (letter <|> digit <|> char '_')
 
 parseFormula :: Parser Formula.ConcreteFormula
 parseFormula = parser
