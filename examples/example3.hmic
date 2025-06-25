@@ -1,0 +1,6 @@
+theorem ProofByOof :=
+  assume.
+  goal Void.
+  begin.
+  qed.
+
