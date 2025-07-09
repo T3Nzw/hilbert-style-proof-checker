@@ -28,7 +28,7 @@ cabal run hilbert-systems -- -- examples/example1.hmic
 
 ## Usage
 
-To see a basic outline for the syntax of a Hilbert-style proof, go to [the grammar section below](documentation#Grammar) or navigate to the [examples directory](./examples/).
+To see a basic outline for the syntax of a Hilbert-style proof, go to [the grammar section below](readme#Grammar) or navigate to the [examples directory](./examples/).
 
 Each program consists of a set of proofs, as defined in the file the program tries to read from.
 
@@ -89,10 +89,10 @@ names are kinda shit ngl
 4.  CONJ_INTRO            :  A -> B -> A & B
 5.  DISJ_INTRO            :  A -> A | B; B -> A | B
 6.  DISJ_ELIM             :  (A -> C) -> (B -> C) -> A | B -> C
-7.  UNIV_WITNESS          :  \forall x, A -> A [x ~> t], t - formula
-8.  UNIV_IMPLIES          :  \forall x, (B -> A) -> (B -> \forall x, A) where x not in FV(B)
-9.  SUB_EXIST             :  A[x ~> t] -> \exists x, A, t - formula
-10. EX_IMPLIES            :  \forall x, (A -> B) -> (\exists x, A -> B) where x not in FV(B)
+7.  UNIV_WITNESS          :  \forall x, A(x) -> A(t), t - formula
+8.  UNIV_IMPLIES          :  \forall x, (B -> A(x)) -> (B -> \forall x, A(x)) where x not in FV(B)
+9.  SUB_EXIST             :  A(t) -> \exists x, A(x), t - formula
+10. EX_IMPLIES            :  \forall x, (A(x) -> B) -> (\exists x, A(x) -> B) where x not in FV(B)
 11. EX_FALSO              :  void -> A
 12. STAB                  :  !!A -> A
 ```

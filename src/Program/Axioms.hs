@@ -27,50 +27,50 @@ data Axiom
 -- minimal logic
 
 s :: MetaFormula
-s = (Variable "A" :->: Variable "B" :->: Variable "C") :->: (Variable "A" :->: Variable "B") :->: Variable "A" :->: Variable "C"
+s = (PropVariable "A" :->: PropVariable "B" :->: PropVariable "C") :->: (PropVariable "A" :->: PropVariable "B") :->: PropVariable "A" :->: PropVariable "C"
 
 k :: MetaFormula
-k = Variable "A" :->: Variable "B" :->: Variable "A"
+k = PropVariable "A" :->: PropVariable "B" :->: PropVariable "A"
 
 conjElimLeft :: MetaFormula
-conjElimLeft = (Variable "A" :&: Variable "B") :->: Variable "B"
+conjElimLeft = (PropVariable "A" :&: PropVariable "B") :->: PropVariable "B"
 
 conjElimRight :: MetaFormula
-conjElimRight = (Variable "A" :&: Variable "B") :->: Variable "A"
+conjElimRight = (PropVariable "A" :&: PropVariable "B") :->: PropVariable "A"
 
 conjIntro :: MetaFormula
-conjIntro = Variable "A" :->: Variable "B" :->: (Variable "A" :&: Variable "B")
+conjIntro = PropVariable "A" :->: PropVariable "B" :->: (PropVariable "A" :&: PropVariable "B")
 
 disjIntroLeft :: MetaFormula
-disjIntroLeft = Variable "B" :->: (Variable "A" :|: Variable "B")
+disjIntroLeft = PropVariable "B" :->: (PropVariable "A" :|: PropVariable "B")
 
 disjIntroRight :: MetaFormula
-disjIntroRight = Variable "A" :->: (Variable "A" :|: Variable "B")
+disjIntroRight = PropVariable "A" :->: (PropVariable "A" :|: PropVariable "B")
 
 disjElim :: MetaFormula
-disjElim = (Variable "A" :->: Variable "C") :->: (Variable "B" :->: Variable "C") :->: (Variable "A" :|: Variable "B") :->: Variable "C"
+disjElim = (PropVariable "A" :->: PropVariable "C") :->: (PropVariable "B" :->: PropVariable "C") :->: (PropVariable "A" :|: PropVariable "B") :->: PropVariable "C"
 
 univWitness :: MetaFormula
-univWitness = Forall "x" (Variable "A") :->: Variable "A" `With` ("x" :~> Variable "t")
+univWitness = Forall "x" (Predicate (PropVariable "A") $ Variable "x") :->: Predicate (PropVariable "A") (Variable "t")
 
 univImplies :: MetaFormula -- where x not in FV(B)
-univImplies = Forall "x" (Variable "B" :->: Variable "A") :->: (Variable "B" :->: Forall "x" (Variable "A"))
+univImplies = Forall "x" (Variable "B" :->: Predicate (PropVariable "A") (Variable "x")) :->: (Variable "B" :->: Forall "x" (Predicate (PropVariable "A") $ Variable "x"))
 
 subExist :: MetaFormula -- where x not in FV(B)
-subExist = Variable "A" `With` ("x" :~> Variable "t") :->: Exists "x" (Variable "A")
+subExist = Predicate (PropVariable "A") (Variable "t") :->: Exists "x" (Predicate (PropVariable "A") $ Variable "x")
 
 exImplies :: MetaFormula
-exImplies = Forall "x" (Variable "A" :->: Variable "B") :->: (Exists "x" (Variable "A") :->: Variable "B")
+exImplies = Forall "x" (Predicate (PropVariable "A") (Variable "x") :->: Variable "B") :->: (Exists "x" (Predicate (PropVariable "A") $ Variable "x") :->: Variable "B")
 
 -- intuitionistic logic
 
 exFalso :: MetaFormula
-exFalso = Void :->: Variable "A"
+exFalso = Void :->: PropVariable "A"
 
 -- classical logic
 
 stab :: MetaFormula
-stab = Negation (Negation (Variable "A")) :->: Variable "A"
+stab = Negation (Negation (PropVariable "A")) :->: PropVariable "A"
 
 matchToMetaFormula :: Axiom -> MetaFormula
 matchToMetaFormula S = s

@@ -31,10 +31,21 @@ parseVoid :: Parser (Formula a)
 parseVoid = string "Void" >> pure Void
 
 parseVariable :: Parser (Formula a)
-parseVariable = Variable <$> itoken (upper >>= \x -> (x :) <$> many' letter)
+parseVariable = Variable <$> itoken (many1 lower)
+
+parsePropVariable :: Parser (Formula a)
+parsePropVariable = PropVariable <$> itoken (upper >>= \x -> (x :) <$> many' letter)
 
 parseNegation :: Parser (Formula a)
 parseNegation = Negation <$> (char '!' >> parseAtom)
+
+parsePredicate :: Parser (Formula a)
+parsePredicate = do
+  name <- parsePropVariable
+  _ <- char '('
+  var <- parseVariable
+  _ <- char ')'
+  pure $ Predicate name var
 
 parseQuantifier :: Parser (Formula a)
 parseQuantifier = do
@@ -54,23 +65,12 @@ parseParentheses = do
   _ <- char ')'
   pure f
 
-parseSubstitution :: Parser (Substitution a)
-parseSubstitution = do
-  _ <- char '['
-  var <- itoken (many1 lower)
-  _ <- string "~>"
-  f <- itoken $ parseFormula 0
-  _ <- char ']'
-  pure $ var :~> f
-
 parseOperation :: Parser String
 parseOperation = string "&" <|> string "|" <|> string "->"
 
 parseAtom :: Parser (Formula a)
-parseAtom = do
-  atom <- parseVoid <|> parseVariable <|> parseNegation <|> parseQuantifier <|> parseParentheses
-  subst <- many' parseSubstitution
-  pure $ foldl With atom subst
+parseAtom =
+  parseVoid <|> parsePredicate <|> parsePropVariable <|> parseNegation <|> parseQuantifier <|> parseParentheses
 
 parseFormula :: Int -> Parser (Formula a)
 parseFormula curRbp = do

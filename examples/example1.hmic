@@ -52,11 +52,9 @@ theorem Identity :=
   begin.
     A -> A -> A by AX K.
     A -> (A -> A) -> A by AX K.
-    oof.
     (A -> (A -> A) -> A) -> (A -> A -> A) -> A -> A by AX S.
     (A -> A -> A) -> A -> A by MP.
     A -> A by MP.
-    oof.
   qed.
 
 theorem DeMorgansLaw1 :=

@@ -17,6 +17,7 @@ import Program.Axioms (matchToMetaFormula)
 import Program.Formulae (Formula (..))
 import qualified Program.Formulae as Formula
 import Program.Rules
+import Utils (isFreeIn)
 import qualified Utils
 
 data ProofStatement = Formula.ConcreteFormula `By` Rule | Oof
@@ -62,7 +63,7 @@ proofcheck' (Context ctx) (f `By` MP) = match ctx (S.toList ctx) f
     match og (f : fs) b = S.member (f :->: b) og || match og fs b
 proofcheck' (Context ctx) (Formula.Forall x f `By` GEN) = S.member f ctx && notfree
   where
-    notfree = all ((x `notElem`) . snd . Utils.split) ctx
+    notfree = not $ all (x `isFreeIn`) ctx
 proofcheck' _ _ = False
 
 -- not necessary to return the context, but might be useful for future improvements :)

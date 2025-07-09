@@ -1,6 +1,8 @@
 theorem ProofByOof :=
-  assume.
-  goal Void.
+  assume \forall x, A(x).
+  goal A(x).
   begin.
+    \forall x, A(x) -> A(x) by AX UNIV_WITNESS.
+    A(x) by MP.
+    oof.
   qed.
-
