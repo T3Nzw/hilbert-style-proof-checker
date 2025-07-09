@@ -4,5 +4,4 @@ theorem ProofByOof :=
   begin.
     \forall x, A(x) -> A(x) by AX UNIV_WITNESS.
     A(x) by MP.
-    oof.
   qed.

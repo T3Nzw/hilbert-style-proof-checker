@@ -66,7 +66,7 @@ match lhs rhs =
     helper _ Void Void = pure True
     helper qctx (Variable x) y =
       case M.lookup x qctx of
-        Nothing -> pure False
+        Nothing -> pure True
         Just z -> pure $ y == z
     helper qctx (PropVariable x) y = do
       ctx <- get
@@ -92,7 +92,7 @@ match lhs rhs =
       helper (M.insert x (Variable y) qctx) lhs rhs
     helper qctx (Exists x lhs) (Exists y rhs) =
       helper (M.insert x (Variable y) qctx) lhs rhs
-    helper qctx (Predicate p1@(Variable x) lhs) (Predicate p2 rhs) = do
+    helper qctx (Predicate p1@(PropVariable x) lhs) (Predicate p2 rhs) = do
       res1 <- helper qctx' p1 p2
       res2 <- helper qctx' lhs rhs
       pure $ res1 && res2
