@@ -4,7 +4,6 @@ module Program.Theorem where
 
 import Control.Monad.State
 import qualified Data.Set as S
-import Program.Formulae
 import Program.ProofStatement (ProofStatement)
 import qualified Program.ProofStatement as PS
 
@@ -15,13 +14,13 @@ data Theorem = Theorem Identifier PS.Goal PS.Context PS.ProofStatements
 -- TODO make it prettier
 instance Show Theorem where
   show :: Theorem -> String
-  show (Theorem iden goal (PS.Context ctx) pss) =
+  show (Theorem iden goal ctx pss) =
     "Theorem \""
       ++ iden
-      ++ "\"\n"
+      ++ "\"\nGoal: "
       ++ show goal
-      ++ "\n"
-      ++ show (S.toList ctx)
+      ++ "\nInitial context:\n"
+      ++ show ctx
       ++ "\n"
       ++ show pss
 

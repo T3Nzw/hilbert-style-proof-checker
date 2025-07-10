@@ -7,4 +7,5 @@ data Rule
   | AX Axiom.Axiom -- just beautiful; axiom
   | MP -- modus ponens
   | GEN -- generalisation
+  | TH -- previously proved theorem
   deriving (Show, Eq, Ord)

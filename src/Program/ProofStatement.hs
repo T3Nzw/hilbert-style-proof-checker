@@ -30,7 +30,13 @@ newtype Goal = Goal Formula.ConcreteFormula
   deriving newtype (Eq, Ord) -- lowkey useless but looks fancy
 
 newtype Context = Context {_ctx :: S.Set Formula.ConcreteFormula}
-  deriving newtype (Show)
+
+instance Show Context where
+  show (Context ctx) = '{' : helper (S.toList ctx)
+    where
+      helper [] = "}"
+      helper (x : xs@(_ : _)) = "  " ++ show x ++ "\n, " ++ helper xs
+      helper (x : xs) = "  " ++ show x ++ "\n" ++ helper xs
 
 {-
 basic algorithm layout:

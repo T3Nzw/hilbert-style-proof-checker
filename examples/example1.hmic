@@ -36,14 +36,14 @@ theorem CommutativityOfDisjunction :=
   qed. 
 
 theorem ForallImpliesExists :=
-  assume \forall x, A.
-  goal \exists x, A.
+  assume \forall x, A(x).
+  goal \exists x, A(x).
   begin.
-    \forall x, A by AS.
-    \forall x, A -> A[x ~> B] by AX UNIV_WITNESS.
-    A[x ~> B] by MP.
-    A[x ~> B] -> \exists x, A by AX SUB_EXIST.
-    \exists x, A by MP.
+    \forall x, A(x) by AS.
+    \forall x, A(x) -> A(x) by AX UNIV_WITNESS.
+    A(x) by MP.
+    A(x) -> \exists x, A(x) by AX SUB_EXIST.
+    \exists x, A(x) by MP.
   qed.
 
 theorem Identity := 

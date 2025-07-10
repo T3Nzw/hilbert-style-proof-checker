@@ -28,7 +28,31 @@ data Formula a
   | Forall String (Formula a)
   | Exists String (Formula a)
   | Predicate (Formula a) (Formula a)
-  deriving (Show, Eq, Ord)
+  deriving (Eq, Ord)
+
+isComplexFormula :: Formula a -> Bool
+isComplexFormula (_ :&: _) = True
+isComplexFormula (_ :|: _) = True
+isComplexFormula (_ :->: _) = True
+isComplexFormula _ = False
+
+parenthesiseFormula :: Formula a -> String
+parenthesiseFormula f =
+  if isComplexFormula f
+    then "(" ++ show f ++ ")"
+    else show f
+
+instance Show (Formula a) where
+  show Void = "⊥"
+  show (Variable x) = x
+  show (PropVariable x) = x
+  show (Negation f) = "¬" ++ parenthesiseFormula f
+  show (lhs :&: rhs) = show lhs ++ " ∧ " ++ parenthesiseFormula rhs
+  show (lhs :|: rhs) = show lhs ++ " ∨ " ++ parenthesiseFormula rhs
+  show (lhs :->: rhs) = parenthesiseFormula lhs ++ " → " ++ show rhs
+  show (Forall x f) = "∀" ++ x ++ ", " ++ parenthesiseFormula f
+  show (Exists x f) = "∃" ++ x ++ ", " ++ parenthesiseFormula f
+  show (Predicate p v) = parenthesiseFormula p ++ "(" ++ show v ++ ")"
 
 infixl 9 :&:
 
