@@ -9,66 +9,14 @@ module Program.Formulae
   )
 where
 
+import Control.Monad (foldM)
 import Control.Monad.State
 import qualified Data.Map as M
-
-type Identifier = String
-
--- | phantom type for a map with string keys that is polymorphic over its values
-type Context a b = M.Map Identifier b
-
-data Formula a
-  = Void
-  | Variable String
-  | PropVariable String
-  | Negation (Formula a)
-  | (Formula a) :&: (Formula a)
-  | (Formula a) :|: (Formula a)
-  | (Formula a) :->: (Formula a)
-  | Forall String (Formula a)
-  | Exists String (Formula a)
-  | Predicate (Formula a) (Formula a)
-  deriving (Eq, Ord)
-
-isComplexFormula :: Formula a -> Bool
-isComplexFormula (_ :&: _) = True
-isComplexFormula (_ :|: _) = True
-isComplexFormula (_ :->: _) = True
-isComplexFormula _ = False
-
-parenthesiseFormula :: Formula a -> String
-parenthesiseFormula f =
-  if isComplexFormula f
-    then "(" ++ show f ++ ")"
-    else show f
-
-instance Show (Formula a) where
-  show Void = "⊥"
-  show (Variable x) = x
-  show (PropVariable x) = x
-  show (Negation f) = "¬" ++ parenthesiseFormula f
-  show (lhs :&: rhs) = show lhs ++ " ∧ " ++ parenthesiseFormula rhs
-  show (lhs :|: rhs) = show lhs ++ " ∨ " ++ parenthesiseFormula rhs
-  show (lhs :->: rhs) = parenthesiseFormula lhs ++ " → " ++ show rhs
-  show (Forall x f) = "∀" ++ x ++ ", " ++ parenthesiseFormula f
-  show (Exists x f) = "∃" ++ x ++ ", " ++ parenthesiseFormula f
-  show (Predicate p v) = parenthesiseFormula p ++ "(" ++ show v ++ ")"
-
-infixl 9 :&:
-
-infixl 8 :|:
-
-infixr 7 :->:
-
-data Concrete
-
-data Meta
-
-type ConcreteFormula = Formula Concrete
-
-type MetaFormula = Formula Meta
+import Defs
+import Defs.Formulae
 
 --
+type Context a b = M.Map Identifier b
 
 data QuantifiedVariables
 
@@ -118,8 +66,8 @@ match lhs rhs =
       helper (M.insert x (Variable y) qctx) lhs rhs
     helper qctx (Predicate p1@(PropVariable x) lhs) (Predicate p2 rhs) = do
       res1 <- helper qctx' p1 p2
-      res2 <- helper qctx' lhs rhs
-      pure $ res1 && res2
+      res2 <- mapM (\(x, y) -> helper qctx' x y) $ lhs `zip` rhs
+      pure $ length lhs == length rhs && res1 && and res2
       where
         qctx' = M.insert x p2 qctx
     helper _ _ _ = pure False

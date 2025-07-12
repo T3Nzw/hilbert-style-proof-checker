@@ -27,7 +27,7 @@ isFreeIn x (lhs :|: rhs) = isFreeIn x lhs && isFreeIn x rhs
 isFreeIn x (lhs :->: rhs) = isFreeIn x lhs && isFreeIn x rhs
 isFreeIn x (Forall y f) = x /= y && isFreeIn x f
 isFreeIn x (Exists y f) = x /= y && isFreeIn x f
-isFreeIn x (Predicate p v) = isFreeIn x p && isFreeIn x v
+isFreeIn x (Predicate p v) = isFreeIn x p && all (isFreeIn x) v
 isFreeIn _ _ = True
 
 validQuantified :: ConcreteFormula -> Bool
@@ -37,7 +37,7 @@ validQuantified (lhs :|: rhs) = validQuantified lhs && validQuantified rhs
 validQuantified (lhs :->: rhs) = validQuantified lhs && validQuantified rhs
 validQuantified (Forall x f) = x `isFreeIn` f && validQuantified f
 validQuantified (Exists x f) = x `isFreeIn` f && validQuantified f
-validQuantified (Predicate p v) = validQuantified p && validQuantified v
+validQuantified (Predicate p v) = validQuantified p && all validQuantified v
 validQuantified _ = True
 
 -- TODO check if correctly implemented

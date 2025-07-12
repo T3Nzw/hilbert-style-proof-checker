@@ -31,7 +31,7 @@ parseVoid :: Parser (Formula a)
 parseVoid = string "Void" >> pure Void
 
 parseVariable :: Parser (Formula a)
-parseVariable = Variable <$> itoken (many1 lower)
+parseVariable = Variable <$> itoken (many1 $ lower <|> digit)
 
 parsePropVariable :: Parser (Formula a)
 parsePropVariable = PropVariable <$> itoken (upper >>= \x -> (x :) <$> many' letter)
@@ -43,9 +43,10 @@ parsePredicate :: Parser (Formula a)
 parsePredicate = do
   name <- parsePropVariable
   _ <- char '('
-  var <- parseVariable
+  vars <- many' (parseFormula 0 <* spaces <* char ',')
+  var <- parseFormula 0
   _ <- char ')'
-  pure $ Predicate name var
+  pure $ Predicate name $ vars ++ [var]
 
 parseQuantifier :: Parser (Formula a)
 parseQuantifier = do
@@ -70,7 +71,7 @@ parseOperation = string "&" <|> string "|" <|> string "->"
 
 parseAtom :: Parser (Formula a)
 parseAtom =
-  parseVoid <|> parsePredicate <|> parsePropVariable <|> parseNegation <|> parseQuantifier <|> parseParentheses
+  parseVoid <|> parseVariable <|> parsePredicate <|> parsePropVariable <|> parseNegation <|> parseQuantifier <|> parseParentheses
 
 parseFormula :: Int -> Parser (Formula a)
 parseFormula curRbp = do

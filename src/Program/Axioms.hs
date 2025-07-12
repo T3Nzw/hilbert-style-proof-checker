@@ -2,25 +2,8 @@
 
 module Program.Axioms where
 
-import Program.Formulae
-
-data Position = Lhs | Rhs
-  deriving (Show, Eq, Ord)
-
-data Axiom
-  = S
-  | K
-  | CONJ_ELIM Position
-  | CONJ_INTRO
-  | DISJ_INTRO Position
-  | DISJ_ELIM
-  | UNIV_WITNESS
-  | UNIV_IMPLIES
-  | SUB_EXIST
-  | EX_IMPLIES
-  | EX_FALSO
-  | STAB
-  deriving (Show, Eq, Ord)
+import Defs.Axioms
+import Defs.Formulae
 
 -- axiom schemas in:
 
@@ -51,16 +34,16 @@ disjElim :: MetaFormula
 disjElim = (PropVariable "A" :->: PropVariable "C") :->: (PropVariable "B" :->: PropVariable "C") :->: (PropVariable "A" :|: PropVariable "B") :->: PropVariable "C"
 
 univWitness :: MetaFormula
-univWitness = Forall "x" (Predicate (PropVariable "A") $ Variable "x") :->: Predicate (PropVariable "A") (Variable "t")
+univWitness = Forall "x" (Predicate (PropVariable "A") [Variable "x"]) :->: Predicate (PropVariable "A") [Variable "t"]
 
 univImplies :: MetaFormula -- where x not in FV(B)
-univImplies = Forall "x" (Variable "B" :->: Predicate (PropVariable "A") (Variable "x")) :->: (Variable "B" :->: Forall "x" (Predicate (PropVariable "A") $ Variable "x"))
+univImplies = Forall "x" (Variable "B" :->: Predicate (PropVariable "A") [Variable "x"]) :->: (Variable "B" :->: Forall "x" (Predicate (PropVariable "A") [Variable "x"]))
 
 subExist :: MetaFormula -- where x not in FV(B)
-subExist = Predicate (PropVariable "A") (Variable "t") :->: Exists "x" (Predicate (PropVariable "A") $ Variable "x")
+subExist = Predicate (PropVariable "A") [Variable "t"] :->: Exists "x" (Predicate (PropVariable "A") [Variable "x"])
 
 exImplies :: MetaFormula
-exImplies = Forall "x" (Predicate (PropVariable "A") (Variable "x") :->: Variable "B") :->: (Exists "x" (Predicate (PropVariable "A") $ Variable "x") :->: Variable "B")
+exImplies = Forall "x" (Predicate (PropVariable "A") [Variable "x"] :->: Variable "B") :->: (Exists "x" (Predicate (PropVariable "A") [Variable "x"]) :->: Variable "B")
 
 -- intuitionistic logic
 

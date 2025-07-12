@@ -23,10 +23,11 @@ executable hilbert-systems
     build-depends:    base ^>=4.18.3.0,
                       containers,
                       mtl,
-                      transformers
+                      transformers,
+                      ordered-containers
 
-    hs-source-dirs:   app, src, src/Parser, src/HMIC, src/Program, src/Utils, src/FileHandler
+    hs-source-dirs:   app, src, src/Parser, src/HMIC, src/Program, src/Utils, src/FileHandler, src/Defs
 
     default-language: Haskell2010
 
-    other-modules: Parser, HMIC.Parser, Program.Theorem, Program.Formulae, Program.Axioms, Program.Rules, Program.ProofStatement, Utils, HMIC.FormulaParser, FileHandler 
+    other-modules: Parser, HMIC.Parser, Program.Theorem, Program.Formulae, Program.Axioms, Program.ProofStatement, Utils, HMIC.FormulaParser, FileHandler, Defs, Defs.Axioms, Defs.Formulae, Defs.ProofStatement, Defs.Rules, Defs.Theorem

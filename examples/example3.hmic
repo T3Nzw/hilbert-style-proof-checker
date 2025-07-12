@@ -1,7 +1,27 @@
-theorem ProofByOof :=
-  assume \forall x, A(x).
-  goal A(x).
+;this is a comment
+; this is another comment
+
+theorem OddNumbers :=
+  assume.
+  ; this is just to showcase nested predicates n stuff
+  goal \forall x, (Odd(x) -> \exists y, Equal(x, Plus(Mult(2, y), 1))).
   begin.
-    \forall x, A(x) -> A(x) by AX UNIV_WITNESS.
-    A(x) by MP.
+  qed.
+
+theorem Identity := 
+  assume.
+  goal A -> A.
+  begin.
+    A -> A -> A by AX K.
+    A -> (A -> A) -> A by AX K.
+    (A -> (A -> A) -> A) -> (A -> A -> A) -> A -> A by AX S.
+    (A -> A -> A) -> A -> A by MP.
+    A -> A by MP.
+  qed.
+
+theorem ProveIdentityUsingIdentity :=
+  assume.
+  goal A -> A -> A.
+  begin.  
+    A -> A by TH Identity.
   qed.

@@ -1,10 +1,14 @@
 module FileHandler where
 
 import Control.Exception
+import Control.Monad.State (evalState)
 import Data.List (isSuffixOf)
+import qualified Data.Map.Ordered as OMap
+import Defs.ProofStatement
+import Defs.Theorem (Theorem (..))
 import HMIC.Parser
 import Parser
-import Program.Theorem (Theorem (Theorem), prove)
+import Program.Theorem (prove)
 import System.Environment (getArgs)
 
 -- the only not-so-fun part about functional languages...
@@ -26,6 +30,6 @@ dothestuff = do
                 Left err -> putStrLn $ "Could not parse file:\n" ++ show err
                 Right (Theorems theorems) -> do
                   print theorems
-                  case prove theorems of
+                  case evalState (prove theorems) OMap.empty of
                     Left err -> putStrLn err
                     Right _ -> putStrLn "ok"
