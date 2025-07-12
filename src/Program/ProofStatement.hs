@@ -3,6 +3,7 @@ module Program.ProofStatement where
 import Control.Monad.State (MonadState (get), State, modify)
 import qualified Data.Map.Ordered as Ord
 import qualified Data.Set as S
+import Debug.Trace
 import Defs
 import Defs.ProofStatement
 import qualified Defs.ProofStatement as PS

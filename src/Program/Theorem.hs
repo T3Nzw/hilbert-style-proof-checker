@@ -36,7 +36,6 @@ prove (t : ts) = do
       Just ps -> pure $ Left $ thIden ++ " failed at proof statement:\n" ++ show ps
       Nothing -> do
         modify $ (<|) (thIden, t)
-        pure $ Right Nothing
-  prove ts
+        prove ts
 
 -- TODO pretty print proof process (expand axioms and substitutions)
