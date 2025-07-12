@@ -35,6 +35,9 @@ axioms =
     "S"
   ]
 
+ctoken :: Parser a -> Parser a
+ctoken p = many' parseComment *> itoken p <* many' parseComment
+
 parseComment :: Parser ()
 parseComment = void $ intervals >> string ";" >> many' (sat (\x -> x /= '\n' && x /= '\r')) >> optional (char '\n')
 
@@ -106,21 +109,19 @@ parseRule = do
 
 parseProofStatement :: Parser ProofStatement
 parseProofStatement = do
-  _ <- many' parseComment
   statement <- parseFormula
   _ <- intervals
   _ <- label "missing keyword by" $ string "by"
   _ <- intervals1
   rule <- itoken parseRule
   _ <- label "missing end of statement delimiter \".\" after rule" $ char '.'
-  _ <- many' parseComment
   return $ statement `By` rule
 
 parseOof :: Parser ProofStatement
-parseOof = parseComment *> (string "oof" >> intervals >> char '.' >> pure Oof) <* parseComment
+parseOof = string "oof" >> intervals >> char '.' >> pure Oof
 
 parseProofStatements :: Parser ProofStatements
-parseProofStatements = many' (itoken parseOof <|> itoken parseProofStatement)
+parseProofStatements = many' $ ctoken (parseOof <|> parseProofStatement)
 
 parseBegin :: Parser ()
 parseBegin = do
@@ -136,21 +137,14 @@ parseQed = do
 
 parseTheorem :: Parser Theorem
 parseTheorem = do
-  _ <- many' parseComment
-  _ <- itoken $ label "missing keyword theorem" $ string "theorem"
+  _ <- ctoken $ label "missing keyword theorem" $ string "theorem"
   iden <- parseIdentifier
-  _ <- itoken $ label "missing symbol :=" $ string ":="
-  _ <- many' parseComment
-  ctx <- itoken parseAssumptions
-  _ <- many' parseComment
-  goal <- itoken parseGoal
-  _ <- many' parseComment
-  _ <- itoken parseBegin
-  _ <- many' parseComment
-  pss <- itoken parseProofStatements
-  _ <- many' parseComment
-  _ <- itoken parseQed
-  _ <- many' parseComment
+  _ <- ctoken $ label "missing symbol :=" $ string ":="
+  ctx <- ctoken parseAssumptions
+  goal <- ctoken parseGoal
+  _ <- ctoken parseBegin
+  pss <- ctoken parseProofStatements
+  _ <- ctoken parseQed
   return $ Theorem iden goal ctx pss
 
 -- TODO pretty print proofs :)

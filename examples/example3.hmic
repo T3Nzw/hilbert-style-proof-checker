@@ -1,13 +1,13 @@
 ;this is a comment
 ; this is another comment
 
-;theorem OddNumbers :=
-;  assume.
-;  ; this is just to showcase nested predicates n stuff
-;  goal \forall x, (Odd(x) -> \exists y, Equal(x, Plus(Mult(2, y), 1))).
-;  begin.
-;    oof.
-;  qed.
+theorem OddNumbers :=
+  assume.
+  ; this is just to showcase nested predicates n stuff
+  goal \forall x, (Odd(x) -> \exists y, Equal(x, Plus(Mult(2, y), 1))).
+  begin.
+    oof.
+  qed.
 
 theorem Identity := 
   assume.

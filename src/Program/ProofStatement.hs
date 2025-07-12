@@ -41,9 +41,10 @@ proofcheck ts (x : xs) = do
   ctx <- get
   if proofcheck' ts ctx x
     then do
-      -- TODO: handle oof case
-      let (f `By` _) = x
-      modify $ \(Context c) -> Context $ S.insert f c
-      proofcheck ts xs
+      case x of
+        Oof -> pure Nothing
+        (f `By` _) -> do
+          modify $ \(Context c) -> Context $ S.insert f c
+          proofcheck ts xs
     else
       pure $ Just x
